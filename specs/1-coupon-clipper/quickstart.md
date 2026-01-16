@@ -2,102 +2,77 @@
 
 ## Prerequisites
 
-- Node.js 20+
-- Docker (for container builds)
-- Terraform 1.5+ (for infrastructure)
-- Azure CLI (authenticated)
-- GitHub account with Actions enabled
+- **Node.js**: 20.x (LTS)
+- **Docker**: For containerized runs and CI/CD validation.
+- **OpenTofu**: (or Terraform 1.6+) for infrastructure management.
+- **Azure CLI**: Logged in to the target subscription.
 
-## Local Development
+## Local Development Setup
 
-```bash
-# 1. Clone and install
-git clone <repo-url>
-cd schnucks-coupons
-npm install
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-# 2. Install Playwright browser
-npx playwright install chromium
+2. **Install Playwright Browser**:
+   ```bash
+   npx playwright install chromium
+   ```
 
-# 3. Configure environment
-cp .env.example .env
-# Edit .env with your settings
+3. **Environment Configuration**:
+   ```bash
+   cp .env.example .env
+   # Ensure SCHNUCKS_BASE_URL is set correctly (default: https://schnucks.com)
+   ```
 
-# 4. Run in development mode
-npm run dev
-```
+## Establishing a Session
 
-## Initial Session Setup
-
-The first run requires manual authentication:
+Schnucks requires Multi-Factor Authentication (MFA). You must perform an initial login to save the session state.
 
 ```bash
-# Start interactive session
 npm run session:init
-
-# This opens a browser - log into Schnucks manually
-# Complete any TFA prompts
-# Session is saved to ./data/session.json
 ```
+- This command launches a browser window.
+- Log in to your Schnucks account.
+- Complete the MFA (TFA) process.
+- Once logged in, close the browser or wait for the script to finish.
+- The session is saved to `./data/session.json`.
 
 ## Running the Clipper
 
+### Development Mode
 ```bash
-# Development (TypeScript)
 npm run dev
+```
 
-# Production (compiled)
+### Production Build
+```bash
 npm run build
 npm start
 ```
 
-## Docker
+## Infrastructure & Deployment
 
-```bash
-# Build image
-docker build -t schnucks-clipper:latest .
-
-# Run with session volume
-docker run -v $(pwd)/data:/home/playwright/data schnucks-clipper:latest
-```
-
-## Infrastructure Deployment
-
+### Resource Provisioning
 ```bash
 cd infra
-
-# Initialize Terraform
-terraform init
-
-# Preview changes
-terraform plan
-
-# Deploy
-terraform apply
+tofu init
+tofu plan
+tofu apply
 ```
 
-## Testing
-
+### Docker
 ```bash
-# Run all tests
-npm test
+# Build the production image
+docker build -t schnucks-clipper .
 
-# Run with coverage
-npm run test:coverage
-
-# Lint check
-npm run lint
-
-# Type check
-npm run typecheck
+# Run with local session data
+docker run -v $(pwd)/data:/home/playwright/data schnucks-clipper
 ```
 
-## Project Structure
+## Quality Control
 
-```
-src/           # Application source code
-tests/         # Unit and integration tests
-infra/         # Terraform modules
-.github/       # CI/CD workflows
-specs/         # Feature specifications
-```
+- **Tests**: `npm test`
+- **Lint**: `npm run lint`
+- **Type Check**: `npm run typecheck`
+- **Format**: `npm run format`

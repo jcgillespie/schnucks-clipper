@@ -19,7 +19,9 @@ describe('Session Management', () => {
         await browser.close();
         try {
             await fs.unlink(testSessionPath);
-        } catch (e) { }
+        } catch {
+            // Ignore error if file doesn't exist
+        }
     });
 
     test('loadContext should create a new context if session file is missing', async () => {

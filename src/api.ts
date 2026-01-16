@@ -100,10 +100,9 @@ export async function clipCoupon(context: BrowserContext, couponId: string): Pro
         }
 
         return true;
-    } catch (error) {
+    } catch {
         logger.error('Error clipping coupon', {
             couponId,
-            error: error instanceof Error ? error.message : String(error)
         });
         return false;
     } finally {

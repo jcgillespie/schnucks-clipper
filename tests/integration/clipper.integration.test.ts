@@ -1,7 +1,6 @@
 import { test, describe, before, after } from 'node:test';
 import assert from 'node:assert';
 import { chromium, Browser } from 'playwright';
-import { loadContext } from '../../src/session.js';
 import { clipAllCoupons } from '../../src/clipper.js';
 
 describe('Integration: Coupon Clipping Flow', () => {

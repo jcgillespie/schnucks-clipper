@@ -22,7 +22,7 @@ function validateConfig(): Config {
 
     try {
         new URL(schnucksBaseUrl);
-    } catch (e) {
+    } catch {
         throw new Error(`INVALID_CONFIG: SCHNUCKS_BASE_URL "${schnucksBaseUrl}" is not a valid URL.`);
     }
 

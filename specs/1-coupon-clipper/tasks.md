@@ -138,11 +138,11 @@
 
 **Purpose**: Documentation, quality improvements, final validation
 
-- [ ] T042 [P] Create comprehensive `README.md` with project overview, setup, usage, deployment instructions
-- [ ] T043 [P] Update `specs/1-coupon-clipper/quickstart.md` with verified commands after implementation
-- [ ] T044 Run full local verification: lint, typecheck, test, Docker build
-- [ ] T045 Validate against spec.md success criteria (SC-001 through SC-008)
-- [ ] T046 Code cleanup and formatting check with `npm run lint:fix && npm run format`
+- [x] T042 [P] Create comprehensive `README.md` with project overview, setup, usage, deployment instructions
+- [x] T043 [P] Update `specs/1-coupon-clipper/quickstart.md` with verified commands after implementation
+- [x] T044 Run full local verification: lint, typecheck, test, Docker build
+- [x] T045 Validate against spec.md success criteria (SC-001 through SC-008)
+- [x] T046 Code cleanup and formatting check with `npm run lint:fix && npm run format`
 
 ---
 

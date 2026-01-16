@@ -11,7 +11,7 @@ export async function loadContext(browser: Browser): Promise<BrowserContext> {
         await fs.access(sessionPath);
         logger.info('Loading existing session context', { path: sessionPath });
         return await browser.newContext({ storageState: sessionPath });
-    } catch (error) {
+    } catch {
         logger.warn('No existing session context found. Manual initial authentication required.', {
             path: sessionPath,
         });
