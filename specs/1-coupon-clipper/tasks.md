@@ -125,16 +125,10 @@
 
 ### CI Workflow
 
-- [ ] T038 [P] [US5] Create `.github/workflows/ci.yaml` with PR trigger, Node.js setup, lint, typecheck, test, Docker build
-
-### Terraform Workflow
-
-- [ ] T039 [P] [US5] Create `.github/workflows/terraform.yaml` with infra/ trigger, terraform init/validate/plan, PR comment
-
-### CD Workflow
-
-- [ ] T040 [US5] Create `.github/workflows/cd.yaml` with main merge trigger, GHCR push, terraform apply, job update
-- [ ] T041 [US5] Document required secrets (AZURE_CREDENTIALS, AZURE_SUBSCRIPTION_ID, GHCR_TOKEN) in `README.md`
+- [x] T038 [P] [US5] Create `.github/workflows/ci.yaml` with PR trigger, Node.js setup, lint, typecheck, test, Docker build
+- [x] T039 [P] [US5] Create `.github/workflows/terraform.yaml` with infra/ trigger, terraform init/validate/plan, PR comment
+- [x] T040 [US5] Create `.github/workflows/cd.yaml` with main merge trigger, GHCR push, terraform apply, job update
+- [x] T041 [US5] Document required secrets (AZURE_CREDENTIALS, AZURE_SUBSCRIPTION_ID, GHCR_TOKEN) in `README.md`
 
 **Checkpoint**: Full CI/CD automation complete
 
