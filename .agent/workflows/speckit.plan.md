@@ -3,15 +3,18 @@ description: Execute the implementation planning workflow using the plan templat
 ---
 
 ---
+
 description: Execute the implementation planning workflow using the plan template to generate design artifacts.
-handoffs: 
-  - label: Create Tasks
-    agent: speckit.tasks
-    prompt: Break the plan into tasks
-    send: true
-  - label: Create Checklist
-    agent: speckit.checklist
-    prompt: Create a checklist for the following domain...
+handoffs:
+
+- label: Create Tasks
+  agent: speckit.tasks
+  prompt: Break the plan into tasks
+  send: true
+- label: Create Checklist
+  agent: speckit.checklist
+  prompt: Create a checklist for the following domain...
+
 ---
 
 ## User Input
@@ -85,7 +88,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Add only new technology from current plan
    - Preserve manual additions between markers
 
-**Output**: data-model.md, /contracts/*, quickstart.md, agent-specific file
+**Output**: data-model.md, /contracts/\*, quickstart.md, agent-specific file
 
 ## Key rules
 

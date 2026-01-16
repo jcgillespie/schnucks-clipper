@@ -6,37 +6,37 @@
 
 ### Node.js Runtime
 
-| Decision | Node.js 20 LTS (Alpine) |
-|----------|-------------------------|
-| **Rationale** | LTS version ensures long-term support; Alpine base reduces image size significantly |
-| **Alternatives** | Node.js 18 (older), Node.js 21 (not LTS) |
+| Decision         | Node.js 20 LTS (Alpine)                                                             |
+| ---------------- | ----------------------------------------------------------------------------------- |
+| **Rationale**    | LTS version ensures long-term support; Alpine base reduces image size significantly |
+| **Alternatives** | Node.js 18 (older), Node.js 21 (not LTS)                                            |
 
 ### Playwright vs Puppeteer
 
-| Decision | Playwright |
-|----------|------------|
-| **Rationale** | Native persistent context support, better reliability, official Docker images, active development |
-| **Alternatives** | Puppeteer (requires additional session management code, less reliable context persistence) |
+| Decision         | Playwright                                                                                        |
+| ---------------- | ------------------------------------------------------------------------------------------------- |
+| **Rationale**    | Native persistent context support, better reliability, official Docker images, active development |
+| **Alternatives** | Puppeteer (requires additional session management code, less reliable context persistence)        |
 
 ### Container Base Image
 
-| Decision | Multi-stage: Alpine (build) + Playwright official (runtime) |
-|----------|-------------------------------------------------------------|
-| **Rationale** | Playwright official image guarantees browser compatibility; Alpine build stage minimizes dependencies |
-| **Alternatives** | Pure Alpine (complex browser dependency management), Node.js official (larger image) |
+| Decision         | Multi-stage: Alpine (build) + Playwright official (runtime)                                           |
+| ---------------- | ----------------------------------------------------------------------------------------------------- |
+| **Rationale**    | Playwright official image guarantees browser compatibility; Alpine build stage minimizes dependencies |
+| **Alternatives** | Pure Alpine (complex browser dependency management), Node.js official (larger image)                  |
 
 ### Terraform over ARM/Bicep
 
-| Decision | Terraform |
-|----------|-----------|
-| **Rationale** | Cloud-agnostic, mature ecosystem, state management, widely adopted |
+| Decision         | Terraform                                                            |
+| ---------------- | -------------------------------------------------------------------- |
+| **Rationale**    | Cloud-agnostic, mature ecosystem, state management, widely adopted   |
 | **Alternatives** | ARM templates (verbose, Azure-only), Bicep (Azure-only, less mature) |
 
 ### Azure Container App Jobs
 
-| Decision | Container App Jobs (not Container Instances) |
-|----------|----------------------------------------------|
-| **Rationale** | Built-in scheduling, free tier available, native File Share mounting, managed environment |
+| Decision         | Container App Jobs (not Container Instances)                                                   |
+| ---------------- | ---------------------------------------------------------------------------------------------- |
+| **Rationale**    | Built-in scheduling, free tier available, native File Share mounting, managed environment      |
 | **Alternatives** | Container Instances (no scheduler, need separate trigger), Functions (less container-friendly) |
 
 ---

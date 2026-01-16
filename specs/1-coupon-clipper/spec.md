@@ -5,7 +5,7 @@
 **Status**: Draft  
 **Input**: User description: "Build a lightweight Node.js/Playwright app to clip coupons using an existing session. Dockerized application with Alpine-based multi-stage build. Infrastructure as Code using Terraform for Azure Container App Jobs and Azure File Share. CI/CD Pipelines using GitHub Actions."
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Automated Coupon Clipping (Priority: P1)
 
@@ -99,7 +99,7 @@ As a developer, I want GitHub Actions to automate building, testing, and deployi
 - What happens when there are zero available coupons? → System logs informational message and exits successfully.
 - What happens when network connectivity is lost during coupon clipping? → Partial progress is logged, and remaining coupons are not clipped until next run.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -150,7 +150,7 @@ As a developer, I want GitHub Actions to automate building, testing, and deployi
 - **Session**: Represents the authenticated browser context including cookies, localStorage, and authentication tokens.
 - **Job Run**: Represents a single execution of the coupon clipping process with timestamp, coupons processed, and result status.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

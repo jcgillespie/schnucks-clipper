@@ -10,28 +10,28 @@ Build a lightweight Node.js/Playwright application to automatically clip all ava
 
 ## Technical Context
 
-| Aspect | Value |
-|--------|-------|
-| **Language/Version** | Node.js 20 LTS (Alpine) + TypeScript |
-| **Primary Dependencies** | Playwright (Chromium), dotenv |
-| **Storage** | Azure File Share mounted at `/home/playwright/data` |
-| **Testing** | Node.js built-in test runner (`node --test`) |
-| **Target Platform** | Azure Container App Jobs (Linux container) |
-| **Project Type** | Single containerized application |
-| **Performance Goals** | Complete all coupon clipping in < 5 minutes per run |
-| **Constraints** | Azure Always Free tier, < 500MB container image |
-| **Scale/Scope** | Single user, daily scheduled execution |
+| Aspect                   | Value                                               |
+| ------------------------ | --------------------------------------------------- |
+| **Language/Version**     | Node.js 20 LTS (Alpine) + TypeScript                |
+| **Primary Dependencies** | Playwright (Chromium), dotenv                       |
+| **Storage**              | Azure File Share mounted at `/home/playwright/data` |
+| **Testing**              | Node.js built-in test runner (`node --test`)        |
+| **Target Platform**      | Azure Container App Jobs (Linux container)          |
+| **Project Type**         | Single containerized application                    |
+| **Performance Goals**    | Complete all coupon clipping in < 5 minutes per run |
+| **Constraints**          | Azure Always Free tier, < 500MB container image     |
+| **Scale/Scope**          | Single user, daily scheduled execution              |
 
 ---
 
 ## Constitution Check
 
-*GATE: Verified against [constitution.md](file:///Users/joshgillespie/src/schnucks-coupons/.specify/memory/constitution.md)*
+_GATE: Verified against [constitution.md](file:///Users/joshgillespie/src/schnucks-coupons/.specify/memory/constitution.md)_
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| **I. Code Quality First** | ✅ PASS | TypeScript strict mode, ESLint/Prettier, explicit error handling |
-| **II. Simplicity Over Cleverness** | ✅ PASS | Single-purpose CLI, flat project structure, minimal dependencies |
+| Principle                          | Status  | Notes                                                              |
+| ---------------------------------- | ------- | ------------------------------------------------------------------ |
+| **I. Code Quality First**          | ✅ PASS | TypeScript strict mode, ESLint/Prettier, explicit error handling   |
+| **II. Simplicity Over Cleverness** | ✅ PASS | Single-purpose CLI, flat project structure, minimal dependencies   |
 | **III. Maintainability by Design** | ✅ PASS | README quickstart, actionable error messages, graceful degradation |
 
 ---
@@ -116,14 +116,14 @@ README.md
 
 Foundation files required before any implementation.
 
-| File | Description |
-|------|-------------|
-| [package.json](file:///Users/joshgillespie/src/schnucks-coupons/package.json) | Node.js project with TypeScript, Playwright, ESLint, Prettier |
-| [tsconfig.json](file:///Users/joshgillespie/src/schnucks-coupons/tsconfig.json) | TypeScript strict mode configuration |
-| [.eslintrc.json](file:///Users/joshgillespie/src/schnucks-coupons/.eslintrc.json) | Linting rules per constitution |
-| [.prettierrc](file:///Users/joshgillespie/src/schnucks-coupons/.prettierrc) | Code formatting configuration |
-| [.env.example](file:///Users/joshgillespie/src/schnucks-coupons/.env.example) | Environment variable template |
-| [.dockerignore](file:///Users/joshgillespie/src/schnucks-coupons/.dockerignore) | Docker build exclusions |
+| File                                                                              | Description                                                   |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| [package.json](file:///Users/joshgillespie/src/schnucks-coupons/package.json)     | Node.js project with TypeScript, Playwright, ESLint, Prettier |
+| [tsconfig.json](file:///Users/joshgillespie/src/schnucks-coupons/tsconfig.json)   | TypeScript strict mode configuration                          |
+| [.eslintrc.json](file:///Users/joshgillespie/src/schnucks-coupons/.eslintrc.json) | Linting rules per constitution                                |
+| [.prettierrc](file:///Users/joshgillespie/src/schnucks-coupons/.prettierrc)       | Code formatting configuration                                 |
+| [.env.example](file:///Users/joshgillespie/src/schnucks-coupons/.env.example)     | Environment variable template                                 |
+| [.dockerignore](file:///Users/joshgillespie/src/schnucks-coupons/.dockerignore)   | Docker build exclusions                                       |
 
 ---
 
@@ -132,33 +132,39 @@ Foundation files required before any implementation.
 Core Node.js/Playwright application (depends on Group 1).
 
 #### [NEW] [config.ts](file:///Users/joshgillespie/src/schnucks-coupons/src/config.ts)
+
 - Load environment variables with validation
 - Export typed configuration object
 - Fail fast on missing required config
 
 #### [NEW] [logger.ts](file:///Users/joshgillespie/src/schnucks-coupons/src/logger.ts)
+
 - Structured JSON logging for container environments
 - Log levels: debug, info, warn, error
 - Include timestamp, operation context
 
 #### [NEW] [session.ts](file:///Users/joshgillespie/src/schnucks-coupons/src/session.ts)
+
 - `loadContext(path: string)`: Load Playwright browser context from disk
 - `saveContext(context, path: string)`: Persist context to disk
 - Detect invalid/expired sessions and throw descriptive errors
 
 #### [NEW] [api.ts](file:///Users/joshgillespie/src/schnucks-coupons/src/api.ts)
+
 - `getCoupons(context)`: GET `api/coupon-api/v1/coupons` using session headers/cookies
 - `clipCoupon(context, couponId)`: POST `api/coupon-api/v1/clipped`
 - Handle rate limiting with exponential backoff
 - Parse and validate API responses
 
 #### [NEW] [clipper.ts](file:///Users/joshgillespie/src/schnucks-coupons/src/clipper.ts)
+
 - `clipAllCoupons()`: Main orchestration function
 - Filter `availableCoupons` array from API response
 - Iterate and clip each coupon with logging
 - Return summary: clipped count, skipped count, errors
 
 #### [NEW] [index.ts](file:///Users/joshgillespie/src/schnucks-coupons/src/index.ts)
+
 - Parse CLI arguments
 - Initialize Playwright with persistent context
 - Call `clipAllCoupons()` and handle exit codes
@@ -166,11 +172,11 @@ Core Node.js/Playwright application (depends on Group 1).
 
 #### Unit Tests
 
-| Test File | Coverage |
-|-----------|----------|
+| Test File                                                                                      | Coverage                             |
+| ---------------------------------------------------------------------------------------------- | ------------------------------------ |
 | [clipper.test.ts](file:///Users/joshgillespie/src/schnucks-coupons/tests/unit/clipper.test.ts) | clipAllCoupons logic with mocked API |
-| [session.test.ts](file:///Users/joshgillespie/src/schnucks-coupons/tests/unit/session.test.ts) | Context load/save, error detection |
-| [api.test.ts](file:///Users/joshgillespie/src/schnucks-coupons/tests/unit/api.test.ts) | API response parsing, retry logic |
+| [session.test.ts](file:///Users/joshgillespie/src/schnucks-coupons/tests/unit/session.test.ts) | Context load/save, error detection   |
+| [api.test.ts](file:///Users/joshgillespie/src/schnucks-coupons/tests/unit/api.test.ts)         | API response parsing, retry logic    |
 
 ---
 
@@ -219,14 +225,17 @@ Infrastructure as Code (can be developed in parallel with Group 2, but must depl
 #### Module: Storage
 
 ##### [NEW] [infra/modules/storage/main.tf](file:///Users/joshgillespie/src/schnucks-coupons/infra/modules/storage/main.tf)
+
 - Azure Storage Account (Standard_LRS, free tier eligible)
 - Azure File Share for session data
 - Output connection string and share name
 
 ##### [NEW] [infra/modules/storage/variables.tf](file:///Users/joshgillespie/src/schnucks-coupons/infra/modules/storage/variables.tf)
+
 - `resource_group_name`, `location`, `storage_account_name`, `file_share_name`
 
 ##### [NEW] [infra/modules/storage/outputs.tf](file:///Users/joshgillespie/src/schnucks-coupons/infra/modules/storage/outputs.tf)
+
 - `storage_account_name`, `file_share_name`, `primary_access_key`
 
 ---
@@ -234,16 +243,19 @@ Infrastructure as Code (can be developed in parallel with Group 2, but must depl
 #### Module: Container Job
 
 ##### [NEW] [infra/modules/container-job/main.tf](file:///Users/joshgillespie/src/schnucks-coupons/infra/modules/container-job/main.tf)
+
 - Azure Container App Environment
 - Azure Container App Job (scheduled trigger)
 - Mount Azure File Share to `/home/playwright/data`
 - Configure image pull from registry
 
 ##### [NEW] [infra/modules/container-job/variables.tf](file:///Users/joshgillespie/src/schnucks-coupons/infra/modules/container-job/variables.tf)
+
 - `resource_group_name`, `location`, `job_name`, `container_image`
 - `schedule_cron`, `storage_account_name`, `file_share_name`, `storage_access_key`
 
 ##### [NEW] [infra/modules/container-job/outputs.tf](file:///Users/joshgillespie/src/schnucks-coupons/infra/modules/container-job/outputs.tf)
+
 - `container_app_job_id`, `container_app_environment_id`
 
 ---
@@ -251,19 +263,23 @@ Infrastructure as Code (can be developed in parallel with Group 2, but must depl
 #### Root Terraform Configuration
 
 ##### [NEW] [infra/providers.tf](file:///Users/joshgillespie/src/schnucks-coupons/infra/providers.tf)
+
 - Azure provider with required version
 - Backend configuration for state storage
 
 ##### [NEW] [infra/variables.tf](file:///Users/joshgillespie/src/schnucks-coupons/infra/variables.tf)
+
 - `subscription_id`, `resource_group_name`, `location`
 - `container_image`, `schedule_cron`
 
 ##### [NEW] [infra/main.tf](file:///Users/joshgillespie/src/schnucks-coupons/infra/main.tf)
+
 - Resource group
 - Call storage module
 - Call container-job module with storage outputs
 
 ##### [NEW] [infra/outputs.tf](file:///Users/joshgillespie/src/schnucks-coupons/infra/outputs.tf)
+
 - `resource_group_name`, `container_job_name`, `file_share_url`
 
 ---
@@ -275,6 +291,7 @@ CI/CD pipelines (depends on Groups 2-4 for build/deploy targets).
 #### [NEW] [.github/workflows/ci.yaml](file:///Users/joshgillespie/src/schnucks-coupons/.github/workflows/ci.yaml)
 
 Triggered on pull requests:
+
 - Checkout code
 - Setup Node.js 20
 - Install dependencies
@@ -286,6 +303,7 @@ Triggered on pull requests:
 #### [NEW] [.github/workflows/terraform.yaml](file:///Users/joshgillespie/src/schnucks-coupons/.github/workflows/terraform.yaml)
 
 Triggered on changes to `infra/`:
+
 - Setup Terraform
 - Run `terraform init`
 - Run `terraform validate`
@@ -295,12 +313,14 @@ Triggered on changes to `infra/`:
 #### [NEW] [.github/workflows/cd.yaml](file:///Users/joshgillespie/src/schnucks-coupons/.github/workflows/cd.yaml)
 
 Triggered on merge to main:
+
 - Build and push Docker image to GitHub Container Registry
 - Run `terraform apply -auto-approve`
 - Update Container App Job with new image tag
 - Post deployment status
 
 **Required Secrets**:
+
 - `AZURE_CREDENTIALS` (Service Principal JSON)
 - `AZURE_SUBSCRIPTION_ID`
 - `GHCR_TOKEN` (GitHub Container Registry)
@@ -311,14 +331,14 @@ Triggered on merge to main:
 
 ### Automated Tests
 
-| Test Type | Command | Description |
-|-----------|---------|-------------|
-| **Unit Tests** | `npm test` | Run all unit tests in `tests/unit/` |
-| **Lint** | `npm run lint` | ESLint validation |
-| **Type Check** | `npm run typecheck` | TypeScript compilation check |
-| **Docker Build** | `docker build -t schnucks-clipper:test .` | Verify image builds successfully |
-| **Terraform Validate** | `cd infra && terraform validate` | Validate Terraform syntax |
-| **Terraform Plan** | `cd infra && terraform plan` | Preview infrastructure changes |
+| Test Type              | Command                                   | Description                         |
+| ---------------------- | ----------------------------------------- | ----------------------------------- |
+| **Unit Tests**         | `npm test`                                | Run all unit tests in `tests/unit/` |
+| **Lint**               | `npm run lint`                            | ESLint validation                   |
+| **Type Check**         | `npm run typecheck`                       | TypeScript compilation check        |
+| **Docker Build**       | `docker build -t schnucks-clipper:test .` | Verify image builds successfully    |
+| **Terraform Validate** | `cd infra && terraform validate`          | Validate Terraform syntax           |
+| **Terraform Plan**     | `cd infra && terraform plan`              | Preview infrastructure changes      |
 
 ### Manual Verification
 

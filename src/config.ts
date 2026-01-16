@@ -4,34 +4,34 @@ import path from 'path';
 dotenv.config({ override: true });
 
 export interface Config {
-    schnucksBaseUrl: string;
-    dataPath: string;
-    sessionFile: string;
-    logLevel: string;
+  schnucksBaseUrl: string;
+  dataPath: string;
+  sessionFile: string;
+  logLevel: string;
 }
 
 function validateConfig(): Config {
-    const schnucksBaseUrl = process.env.SCHNUCKS_BASE_URL || 'https://schnucks.com';
-    const dataPath = process.env.DATA_PATH || './data';
-    const sessionFile = process.env.SESSION_FILE || path.join(dataPath, 'session.json');
-    const logLevel = process.env.LOG_LEVEL || 'info';
+  const schnucksBaseUrl = process.env.SCHNUCKS_BASE_URL || 'https://schnucks.com';
+  const dataPath = process.env.DATA_PATH || './data';
+  const sessionFile = process.env.SESSION_FILE || path.join(dataPath, 'session.json');
+  const logLevel = process.env.LOG_LEVEL || 'info';
 
-    if (!schnucksBaseUrl) {
-        throw new Error('MISSING_CONFIG: SCHNUCKS_BASE_URL environment variable is required.');
-    }
+  if (!schnucksBaseUrl) {
+    throw new Error('MISSING_CONFIG: SCHNUCKS_BASE_URL environment variable is required.');
+  }
 
-    try {
-        new URL(schnucksBaseUrl);
-    } catch {
-        throw new Error(`INVALID_CONFIG: SCHNUCKS_BASE_URL "${schnucksBaseUrl}" is not a valid URL.`);
-    }
+  try {
+    new URL(schnucksBaseUrl);
+  } catch {
+    throw new Error(`INVALID_CONFIG: SCHNUCKS_BASE_URL "${schnucksBaseUrl}" is not a valid URL.`);
+  }
 
-    return {
-        schnucksBaseUrl,
-        dataPath: path.resolve(dataPath),
-        sessionFile: path.resolve(sessionFile),
-        logLevel: logLevel.toLowerCase(),
-    };
+  return {
+    schnucksBaseUrl,
+    dataPath: path.resolve(dataPath),
+    sessionFile: path.resolve(sessionFile),
+    logLevel: logLevel.toLowerCase(),
+  };
 }
 
 export const config = validateConfig();

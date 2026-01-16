@@ -163,28 +163,32 @@ graph LR
 
 ### User Story Dependencies
 
-| Story | Depends On | Can Start After |
-|-------|------------|-----------------|
-| **US1+US2** (Core App) | Phase 2 | Foundational complete |
-| **US3** (Docker) | US1+US2 | Core app compiles and runs |
-| **US4** (Terraform) | Phase 2 | Can parallelize with US1+US2 |
-| **US5** (CI/CD) | US3, US4 | Docker + Terraform both ready |
+| Story                  | Depends On | Can Start After               |
+| ---------------------- | ---------- | ----------------------------- |
+| **US1+US2** (Core App) | Phase 2    | Foundational complete         |
+| **US3** (Docker)       | US1+US2    | Core app compiles and runs    |
+| **US4** (Terraform)    | Phase 2    | Can parallelize with US1+US2  |
+| **US5** (CI/CD)        | US3, US4   | Docker + Terraform both ready |
 
 ### Parallel Opportunities
 
 **Within Phase 1** (all can run in parallel):
+
 - T003, T004, T005, T006, T007, T008
 
 **Within Phase 3** (models/tests in parallel):
+
 - T013, T014 (then T015, T016 sequentially)
 - T017, T018, T019 (all tests parallel)
 
 **Within Phase 5** (modules in parallel):
+
 - T026, T027, T028 (storage module)
 - T029, T030, T031 (container-job module)
 - Then T032-T037 sequentially
 
 **Within Phase 6** (CI/Terraform workflows parallel):
+
 - T038, T039 (then T040, T041 sequentially)
 
 ---
@@ -214,29 +218,29 @@ Task: "T015 Implement coupon clipper in src/clipper.ts"
 
 ### Incremental Delivery
 
-| Milestone | Phases | Deliverable |
-|-----------|--------|-------------|
-| **MVP** | 1, 2, 3 | Local coupon clipping works |
-| **Containerized** | + 4 | Docker image ready |
-| **Cloud Ready** | + 5 | Terraform deploys to Azure |
-| **Automated** | + 6, 7 | Full CI/CD pipeline |
+| Milestone         | Phases  | Deliverable                 |
+| ----------------- | ------- | --------------------------- |
+| **MVP**           | 1, 2, 3 | Local coupon clipping works |
+| **Containerized** | + 4     | Docker image ready          |
+| **Cloud Ready**   | + 5     | Terraform deploys to Azure  |
+| **Automated**     | + 6, 7  | Full CI/CD pipeline         |
 
 ---
 
 ## Summary
 
-| Metric | Value |
-|--------|-------|
-| **Total Tasks** | 46 |
-| **Phase 1 (Setup)** | 8 tasks |
-| **Phase 2 (Foundational)** | 4 tasks |
-| **Phase 3 (US1+US2)** | 8 tasks |
-| **Phase 4 (US3 Docker)** | 5 tasks |
-| **Phase 5 (US4 Terraform)** | 12 tasks |
-| **Phase 6 (US5 CI/CD)** | 4 tasks |
-| **Phase 7 (Polish)** | 5 tasks |
-| **Parallelizable Tasks** | 26 (57%) |
-| **Suggested MVP Scope** | Phases 1-3 (20 tasks) |
+| Metric                      | Value                 |
+| --------------------------- | --------------------- |
+| **Total Tasks**             | 46                    |
+| **Phase 1 (Setup)**         | 8 tasks               |
+| **Phase 2 (Foundational)**  | 4 tasks               |
+| **Phase 3 (US1+US2)**       | 8 tasks               |
+| **Phase 4 (US3 Docker)**    | 5 tasks               |
+| **Phase 5 (US4 Terraform)** | 12 tasks              |
+| **Phase 6 (US5 CI/CD)**     | 4 tasks               |
+| **Phase 7 (Polish)**        | 5 tasks               |
+| **Parallelizable Tasks**    | 26 (57%)              |
+| **Suggested MVP Scope**     | Phases 1-3 (20 tasks) |
 
 ---
 

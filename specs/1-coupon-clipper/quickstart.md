@@ -10,11 +10,13 @@
 ## Local Development Setup
 
 1. **Install Dependencies**:
+
    ```bash
    npm install
    ```
 
 2. **Install Playwright Browser**:
+
    ```bash
    npx playwright install chromium
    ```
@@ -32,6 +34,7 @@ Schnucks requires Multi-Factor Authentication (MFA). You must perform an initial
 ```bash
 npm run session:init
 ```
+
 - This command launches a browser window.
 - Log in to your Schnucks account.
 - Complete the MFA (TFA) process.
@@ -41,11 +44,13 @@ npm run session:init
 ## Running the Clipper
 
 ### Development Mode
+
 ```bash
 npm run dev
 ```
 
 ### Production Build
+
 ```bash
 npm run build
 npm start
@@ -54,6 +59,7 @@ npm start
 ## Infrastructure & Deployment
 
 ### Resource Provisioning
+
 ```bash
 cd infra
 tofu init
@@ -62,6 +68,7 @@ tofu apply
 ```
 
 ### Docker
+
 ```bash
 # Build the production image
 docker build -t schnucks-clipper .

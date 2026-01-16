@@ -65,13 +65,13 @@ All code MUST be written for the future maintainer (including your future self):
 
 The following standards apply to all code in this project:
 
-| Standard | Requirement |
-|----------|-------------|
-| **Linting** | All code MUST pass linting with zero warnings |
-| **Formatting** | All code MUST be auto-formatted before commit |
-| **Type Safety** | TypeScript strict mode MUST be enabled |
+| Standard           | Requirement                                            |
+| ------------------ | ------------------------------------------------------ |
+| **Linting**        | All code MUST pass linting with zero warnings          |
+| **Formatting**     | All code MUST be auto-formatted before commit          |
+| **Type Safety**    | TypeScript strict mode MUST be enabled                 |
 | **Error Handling** | All async operations MUST have explicit error handling |
-| **Logging** | All significant operations MUST log their outcome |
+| **Logging**        | All significant operations MUST log their outcome      |
 
 ## Development Workflow
 
