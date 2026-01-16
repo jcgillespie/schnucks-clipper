@@ -42,6 +42,6 @@ export async function clipAllCoupons(context: BrowserContext): Promise<ClippingS
     }
   }
 
-  logger.info('Coupon clipping process complete.', summary);
+  logger.info('Coupon clipping process complete.', summary as unknown as Record<string, unknown>);
   return summary;
 }

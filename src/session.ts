@@ -42,7 +42,7 @@ export async function isSessionValid(context: BrowserContext): Promise<boolean> 
   // In a real scenario, we might check for 'connect.sid' or similar.
   // For Schnucks, we'll look for common auth indicators.
   const hasAuthToken = cookies.some(
-    (c: any) => c.name.toLowerCase().includes('token') || c.name.toLowerCase().includes('session'),
+    (c) => c.name.toLowerCase().includes('token') || c.name.toLowerCase().includes('session'),
   );
 
   if (!hasAuthToken) {

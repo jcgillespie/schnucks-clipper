@@ -46,15 +46,17 @@ describe('Session Management', () => {
 
     // Override config session file for test
     const originalSessionFile = config.sessionFile;
-    (config as any).sessionFile = testSessionPath;
+    (config as { sessionFile: string }).sessionFile = testSessionPath;
 
     try {
       await saveContext(context);
       await fs.access(testSessionPath);
-      const content = JSON.parse(await fs.readFile(testSessionPath, 'utf8'));
-      assert.ok(content.cookies.some((c: any) => c.name === 'test-cookie'));
+      const content = JSON.parse(await fs.readFile(testSessionPath, 'utf8')) as {
+        cookies: { name: string }[];
+      };
+      assert.ok(content.cookies.some((c) => c.name === 'test-cookie'));
     } finally {
-      (config as any).sessionFile = originalSessionFile;
+      (config as { sessionFile: string }).sessionFile = originalSessionFile;
       await context.close();
     }
   });

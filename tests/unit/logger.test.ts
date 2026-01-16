@@ -3,15 +3,15 @@ import assert from 'node:assert';
 import { logger } from '../../src/logger.js';
 
 describe('Logger', () => {
-  let originalWrite: any;
+  let originalWrite: typeof process.stdout.write;
   let logOutput: string[] = [];
 
   before(() => {
     originalWrite = process.stdout.write;
-    process.stdout.write = (chunk: any) => {
+    process.stdout.write = ((chunk: string | Uint8Array) => {
       logOutput.push(chunk.toString());
       return true;
-    };
+    }) as unknown as typeof process.stdout.write;
   });
 
   after(() => {

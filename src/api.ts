@@ -9,6 +9,13 @@ export interface Coupon {
   source?: string;
 }
 
+interface RawCoupon {
+  id: number | string;
+  description: string | null;
+  clippedDate: string | null;
+  expired: boolean;
+}
+
 /**
  * Extracts the schnucks-client-id from the session's localStorage
  */
@@ -54,10 +61,10 @@ export async function getCoupons(context: BrowserContext): Promise<Coupon[]> {
       throw new Error(`API_ERROR: Failed to fetch coupons.Status: ${status} `);
     }
 
-    const { data } = await response.json();
+    const { data } = (await response.json()) as { data: RawCoupon[] | null };
     return (data || [])
-      .filter((c: any) => c.clippedDate === null && c.expired === false)
-      .map((c: any) => ({
+      .filter((c: RawCoupon) => c.clippedDate === null && c.expired === false)
+      .map((c: RawCoupon) => ({
         id: String(c.id),
         description: c.description || 'No description',
         isClipped: false,
