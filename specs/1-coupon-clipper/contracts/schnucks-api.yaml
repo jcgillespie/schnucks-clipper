@@ -1,0 +1,149 @@
+openapi: 3.0.3
+info:
+  title: Schnucks Coupon API
+  description: |
+    API contract for interacting with Schnucks coupon system.
+    Based on observed API behavior from curl command analysis.
+  version: 1.0.0
+
+servers:
+  - url: https://nourish.schnucks.com
+    description: Schnucks production API
+
+paths:
+  /api/coupon-api/v1/coupons:
+    get:
+      summary: Get all coupons for authenticated user
+      description: |
+        Retrieves all coupons including available and already-clipped.
+        Requires valid session cookies for authentication.
+      operationId: getCoupons
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Successful response with coupon list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CouponsResponse'
+        '401':
+          description: Session expired or invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limited
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds to wait before retry
+
+  /api/coupon-api/v1/clipped:
+    post:
+      summary: Clip a coupon to user account
+      description: |
+        Adds the specified coupon to the user's clipped coupons.
+        Coupon must be in 'available' status.
+      operationId: clipCoupon
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClipRequest'
+      responses:
+        '200':
+          description: Coupon successfully clipped
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClipResponse'
+        '400':
+          description: Invalid coupon ID or already clipped
+        '401':
+          description: Session expired or invalid
+        '429':
+          description: Rate limited
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session
+
+  schemas:
+    Coupon:
+      type: object
+      required:
+        - id
+        - title
+        - status
+      properties:
+        id:
+          type: string
+          description: Unique coupon identifier
+        title:
+          type: string
+          description: Display title
+        description:
+          type: string
+          description: Detailed description
+        expirationDate:
+          type: string
+          format: date-time
+        value:
+          type: string
+          description: Discount value display text
+        status:
+          type: string
+          enum: [available, clipped, redeemed, expired]
+        category:
+          type: string
+
+    CouponsResponse:
+      type: object
+      required:
+        - availableCoupons
+        - clippedCoupons
+        - totalCount
+      properties:
+        availableCoupons:
+          type: array
+          items:
+            $ref: '#/components/schemas/Coupon'
+        clippedCoupons:
+          type: array
+          items:
+            $ref: '#/components/schemas/Coupon'
+        totalCount:
+          type: integer
+
+    ClipRequest:
+      type: object
+      required:
+        - couponId
+      properties:
+        couponId:
+          type: string
+
+    ClipResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: string

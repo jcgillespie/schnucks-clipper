@@ -1,0 +1,39 @@
+{
+    "name": "schnucks-coupons",
+    "version": "1.0.0",
+    "description": "Automated coupon clipper for Schnucks",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/index.js",
+        "dev": "tsx src/index.ts",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "format": "prettier --write .",
+        "typecheck": "tsc --noEmit",
+        "test": "tsx --test tests/unit/config.test.ts tests/unit/logger.test.ts tests/unit/session.test.ts tests/unit/api.test.ts tests/unit/clipper.test.ts tests/integration/clipper.integration.test.ts",
+        "session:init": "tsx src/session-init.ts"
+    },
+    "keywords": [
+        "schnucks",
+        "coupons",
+        "playwright",
+        "automation"
+    ],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "dotenv": "^16.3.1",
+        "playwright": "^1.40.1"
+    },
+    "devDependencies": {
+        "@types/node": "^20.10.5",
+        "eslint": "^8.56.0",
+        "eslint-config-prettier": "^9.1.0",
+        "eslint-plugin-playwright": "^0.18.0",
+        "prettier": "^3.1.1",
+        "ts-node": "^10.9.2",
+        "tsx": "^4.21.0",
+        "typescript": "^5.3.3"
+    }
+}
