@@ -13,3 +13,4 @@ data/
 .terraform.lock.hcl
 *.tfvars
 *.tfvars.json
+.terraform.tfstate.lock.info
