@@ -6,6 +6,10 @@ on:
       - 'infra/**'
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 env:
   TF_LOG: INFO
   # OpenTofu uses the same environment variables as Terraform for the most part
