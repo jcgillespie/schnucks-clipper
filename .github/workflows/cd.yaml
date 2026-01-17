@@ -64,4 +64,4 @@ jobs:
         run: tofu init
 
       - name: OpenTofu Apply
-        run: tofu apply -auto-approve
+        run: tofu apply -auto-approve -var "image_name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main"
