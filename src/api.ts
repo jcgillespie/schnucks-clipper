@@ -27,10 +27,10 @@ async function getClientId(context: BrowserContext): Promise<string> {
   const clientIdObj = origin?.localStorage.find((item) => item.name === 'schnucks-client-id');
 
   if (!clientIdObj) {
-    logger.warn('schnucks-client-id not found in session localStorage. Using fallback.');
-    return 'hq36yDS0fiNFTHPby_YWb'; // Fallback to a known working one
+    throw new Error('MISSING_CLIENT_ID: schnucks-client-id not found in session localStorage. Please re-authenticate.');
   }
 
+  logger.debug('Extracted schnucks-client-id from localStorage', { clientId: clientIdObj.value });
   return clientIdObj.value;
 }
 
@@ -75,61 +75,39 @@ export async function getCoupons(context: BrowserContext): Promise<Coupon[]> {
 }
 
 export async function clipCoupon(context: BrowserContext, couponId: string): Promise<boolean> {
-  const page = await context.newPage();
   const url = `${config.schnucksBaseUrl}/api/coupon-api/v1/clipped`;
   const clientId = await getClientId(context);
 
   try {
-    logger.debug('Clipping coupon', { couponId, url, clientId });
+    logger.debug('Clipping coupon via RequestContext', { couponId, url, clientId });
 
-    const response = await page.evaluate(
-      async ({
-        url,
-        method,
-        headers,
-        body,
-      }: {
-        url: string;
-        method: string;
-        headers: Record<string, string>;
-        body?: string;
-      }) => {
-        const res = await fetch(url, { method, headers, body });
-        return {
-          ok: res.ok,
-          status: res.status,
-          text: await res.text(),
-        };
+    const response = await context.request.post(url, {
+      headers: {
+        ...getHeaders(clientId),
+        'Content-Type': 'text/plain;charset=UTF-8',
+        Origin: config.schnucksBaseUrl,
       },
-      {
-        url,
-        method: 'POST',
-        headers: {
-          ...getHeaders(clientId),
-          Origin: config.schnucksBaseUrl,
-          'Content-Type': 'text/plain;charset=UTF-8',
-        },
-        body: JSON.stringify({ couponId: Number(couponId) }),
-      },
-    );
+      data: JSON.stringify({ couponId: Number(couponId) }),
+    });
 
-    if (!response.ok) {
+    if (!response.ok()) {
+      const text = await response.text();
       logger.warn('Failed to clip coupon', {
         couponId,
-        status: response.status,
-        body: response.text,
+        status: response.status(),
+        body: text,
       });
       return false;
     }
 
     return true;
-  } catch {
+  } catch (error) {
     logger.error('Error clipping coupon', {
       couponId,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
     });
     return false;
-  } finally {
-    await page.close();
   }
 }
 
