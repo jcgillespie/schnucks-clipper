@@ -5,6 +5,11 @@ on:
     paths:
       - 'infra/**'
   workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Docker image tag to use for plan'
+        required: true
+        default: 'latest'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -45,5 +50,5 @@ jobs:
         run: tofu validate
 
       - name: OpenTofu Plan
-        run: tofu plan -no-color
+        run: tofu plan -no-color -var "image_name=ghcr.io/${{ github.repository }}:${{ github.event.inputs.image_tag || 'latest' }}"
         continue-on-error: true
