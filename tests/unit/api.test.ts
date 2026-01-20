@@ -62,7 +62,7 @@ describe('API Client', () => {
           ok: () => true,
           status: () => 200,
           text: async () => 'OK',
-        } as APIResponse
+        } as APIResponse;
       }
       throw new Error(`Unexpected POST to ${url}`);
     };
