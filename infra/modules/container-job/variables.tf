@@ -72,3 +72,8 @@ variable "registry_password" {
   type        = string
   sensitive   = true
 }
+
+variable "log_analytics_workspace_id" {
+  description = "ID of the Log Analytics Workspace for logging"
+  type        = string
+}

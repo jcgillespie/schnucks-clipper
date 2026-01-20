@@ -50,5 +50,10 @@ jobs:
         run: tofu validate
 
       - name: OpenTofu Plan
-        run: tofu plan -no-color -var "image_name=ghcr.io/${{ github.repository }}:${{ github.event.inputs.image_tag || 'latest' }}"
+        run: |
+          tofu plan -no-color \
+            -var "image_name=ghcr.io/${{ github.repository }}:${{ github.event.inputs.image_tag || 'latest' }}" \
+            -var "registry_username=${{ github.actor }}" \
+            -var "registry_password=${{ secrets.GITHUB_TOKEN }}" \
+            -var "action_group_email=${{ secrets.ACTION_GROUP_EMAIL }}"
         continue-on-error: true

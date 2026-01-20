@@ -54,12 +54,19 @@ describe('API Client', () => {
   });
 
   test('clipCoupon should return true on success', async () => {
-    await context.route('**/api/coupon-api/v1/clipped', (route) => {
-      route.fulfill({ status: 200 });
-    });
+    // Mock context.request.post explicitly because context.route doesn't intercept APIRequestContext
+    context.request.post = async (url: string) => {
+      if (url.includes('/api/coupon-api/v1/clipped')) {
+        return {
+          ok: () => true,
+          status: () => 200,
+          text: async () => 'OK',
+        } as any;
+      }
+      throw new Error(`Unexpected POST to ${url}`);
+    };
 
     const success = await clipCoupon(context, '123');
     assert.strictEqual(success, true);
-    await context.unroute('**/api/coupon-api/v1/clipped');
   });
 });

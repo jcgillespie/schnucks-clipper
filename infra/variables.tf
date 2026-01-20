@@ -43,3 +43,14 @@ variable "registry_password" {
   type        = string
   sensitive   = true
 }
+
+variable "action_group_email" {
+  description = "Email address for alert notifications"
+  type        = string
+}
+
+variable "log_retention_days" {
+  description = "Retention period for Log Analytics logs (days)"
+  type        = number
+  default     = 30
+}

@@ -44,9 +44,17 @@ describe('Clipper Orchestration', () => {
       });
     });
 
-    await context.route('**/api/coupon-api/v1/clipped', (route) => {
-      route.fulfill({ status: 200 });
-    });
+    // Mock context.request.post explicitly
+    context.request.post = async (url: string) => {
+      if (url.includes('/api/coupon-api/v1/clipped')) {
+        return {
+          ok: () => true,
+          status: () => 200,
+          text: async () => 'OK',
+        } as any;
+      }
+      throw new Error(`Unexpected POST to ${url}`);
+    };
 
     const summary = await clipAllCoupons(context);
 
@@ -55,7 +63,6 @@ describe('Clipper Orchestration', () => {
     assert.strictEqual(summary.failed, 0);
 
     await context.unroute('**/api/coupon-api/v1/coupons');
-    await context.unroute('**/api/coupon-api/v1/clipped');
   });
 
   test('clipAllCoupons should handle failures gracefully', async () => {
@@ -68,9 +75,17 @@ describe('Clipper Orchestration', () => {
       });
     });
 
-    await context.route('**/api/coupon-api/v1/clipped', (route) => {
-      route.fulfill({ status: 500 });
-    });
+    // Mock context.request.post explicitly for failure
+    context.request.post = async (url: string) => {
+      if (url.includes('/api/coupon-api/v1/clipped')) {
+        return {
+          ok: () => false,
+          status: () => 500,
+          text: async () => 'Internal Server Error',
+        } as any;
+      }
+      throw new Error(`Unexpected POST to ${url}`);
+    };
 
     const summary = await clipAllCoupons(context);
 
@@ -79,6 +94,5 @@ describe('Clipper Orchestration', () => {
     assert.strictEqual(summary.failed, 1);
 
     await context.unroute('**/api/coupon-api/v1/coupons');
-    await context.unroute('**/api/coupon-api/v1/clipped');
   });
 });
