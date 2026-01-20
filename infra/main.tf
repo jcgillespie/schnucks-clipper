@@ -39,7 +39,7 @@ module "observability" {
   location            = var.location
   project_name        = var.project_name
   environment         = var.environment
-  
-  action_group_email  = var.action_group_email
-  log_retention_days  = var.log_retention_days
+
+  action_group_email = var.action_group_email
+  log_retention_days = var.log_retention_days
 }
