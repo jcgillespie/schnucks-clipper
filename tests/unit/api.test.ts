@@ -61,7 +61,7 @@ describe('API Client', () => {
           ok: () => true,
           status: () => 200,
           text: async () => 'OK',
-        } as any;
+        } as unknown as import('playwright-chromium').APIResponse;
       }
       throw new Error(`Unexpected POST to ${url}`);
     };

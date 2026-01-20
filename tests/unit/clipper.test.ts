@@ -51,7 +51,7 @@ describe('Clipper Orchestration', () => {
           ok: () => true,
           status: () => 200,
           text: async () => 'OK',
-        } as any;
+        } as unknown as import('playwright-chromium').APIResponse;
       }
       throw new Error(`Unexpected POST to ${url}`);
     };
@@ -82,7 +82,7 @@ describe('Clipper Orchestration', () => {
           ok: () => false,
           status: () => 500,
           text: async () => 'Internal Server Error',
-        } as any;
+        } as unknown as import('playwright-chromium').APIResponse;
       }
       throw new Error(`Unexpected POST to ${url}`);
     };
