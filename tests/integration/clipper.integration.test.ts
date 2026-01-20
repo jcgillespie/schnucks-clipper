@@ -41,9 +41,17 @@ describe('Integration: Coupon Clipping Flow', () => {
       });
     });
 
-    await context.route('**/api/coupon-api/v1/clipped', (route) => {
-      route.fulfill({ status: 200 });
-    });
+    // Mock context.request.post explicitly
+    context.request.post = async (url: string) => {
+      if (url.includes('/api/coupon-api/v1/clipped')) {
+        return {
+          ok: () => true,
+          status: () => 200,
+          text: async () => 'OK',
+        } as any;
+      }
+      throw new Error(`Unexpected POST to ${url}`);
+    };
 
     const summary = await clipAllCoupons(context);
 
