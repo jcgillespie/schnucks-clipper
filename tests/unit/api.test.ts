@@ -4,6 +4,7 @@ import playwright from 'playwright-chromium';
 const { chromium } = playwright;
 type Browser = import('playwright-chromium').Browser;
 type BrowserContext = import('playwright-chromium').BrowserContext;
+type APIResponse = import('playwright-chromium').APIResponse;
 import { getCoupons, clipCoupon } from '../../src/api.js';
 
 describe('API Client', () => {
@@ -61,7 +62,7 @@ describe('API Client', () => {
           ok: () => true,
           status: () => 200,
           text: async () => 'OK',
-        } as unknown as import('playwright-chromium').APIResponse;
+        } as APIResponse
       }
       throw new Error(`Unexpected POST to ${url}`);
     };

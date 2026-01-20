@@ -4,6 +4,7 @@ import playwright from 'playwright-chromium';
 const { chromium } = playwright;
 type Browser = import('playwright-chromium').Browser;
 type BrowserContext = import('playwright-chromium').BrowserContext;
+type APIResponse = import('playwright-chromium').APIResponse;
 import { clipAllCoupons } from '../../src/clipper.js';
 
 describe('Clipper Orchestration', () => {
@@ -51,7 +52,7 @@ describe('Clipper Orchestration', () => {
           ok: () => true,
           status: () => 200,
           text: async () => 'OK',
-        } as unknown as import('playwright-chromium').APIResponse;
+        } as APIResponse;
       }
       throw new Error(`Unexpected POST to ${url}`);
     };
@@ -82,7 +83,7 @@ describe('Clipper Orchestration', () => {
           ok: () => false,
           status: () => 500,
           text: async () => 'Internal Server Error',
-        } as unknown as import('playwright-chromium').APIResponse;
+        } as APIResponse;
       }
       throw new Error(`Unexpected POST to ${url}`);
     };
