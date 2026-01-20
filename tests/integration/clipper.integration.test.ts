@@ -1,6 +1,7 @@
 import { test, describe, before, after } from 'node:test';
 import assert from 'node:assert';
 import playwright from 'playwright-chromium';
+type APIResponse = import('playwright-chromium').APIResponse;
 const { chromium } = playwright;
 type Browser = import('playwright-chromium').Browser;
 import { clipAllCoupons } from '../../src/clipper.js';
@@ -48,7 +49,7 @@ describe('Integration: Coupon Clipping Flow', () => {
           ok: () => true,
           status: () => 200,
           text: async () => 'OK',
-        } as any;
+        } as APIResponse;
       }
       throw new Error(`Unexpected POST to ${url}`);
     };
