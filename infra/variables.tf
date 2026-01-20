@@ -26,3 +26,20 @@ variable "cron_schedule" {
   type        = string
   default     = "0 10 * * *" # 10 AM Daily
 }
+
+variable "registry_server" {
+  description = "Container registry server"
+  type        = string
+  default     = "ghcr.io"
+}
+
+variable "registry_username" {
+  description = "Container registry username"
+  type        = string
+}
+
+variable "registry_password" {
+  description = "Container registry password"
+  type        = string
+  sensitive   = true
+}

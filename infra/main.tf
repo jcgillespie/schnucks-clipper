@@ -24,4 +24,8 @@ module "container_job" {
   storage_account_name = module.storage.storage_account_name
   storage_account_key  = module.storage.primary_access_key
   file_share_name      = module.storage.file_share_name
+
+  registry_server   = var.registry_server
+  registry_username = var.registry_username
+  registry_password = var.registry_password
 }

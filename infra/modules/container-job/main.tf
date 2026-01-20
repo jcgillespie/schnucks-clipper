@@ -22,6 +22,17 @@ resource "azurerm_container_app_job" "this" {
   replica_timeout_in_seconds = 300
   replica_retry_limit        = 1
 
+  secret {
+    name  = "registry-password"
+    value = var.registry_password
+  }
+
+  registry {
+    server               = var.registry_server
+    username             = var.registry_username
+    password_secret_name = "registry-password"
+  }
+
   schedule_trigger_config {
     cron_expression = var.cron_schedule
   }
