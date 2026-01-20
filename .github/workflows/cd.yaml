@@ -78,5 +78,5 @@ jobs:
           tofu apply -auto-approve \
             -var "image_name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main" \
             -var "registry_username=${{ github.actor }}" \
-            -var "registry_password=${{ secrets.GITHUB_TOKEN }}" \
+            -var "registry_password=${{ secrets.GHCR_PAT }}" \
             -var "action_group_email=${{ secrets.ACTION_GROUP_EMAIL }}"
