@@ -58,6 +58,16 @@ npm run dev
 
 The project is designed to run as an **Azure Container App Job** on a daily schedule.
 
+### 🔔 Monitoring & Alerts
+The infrastructure automatically sets up:
+- **Log Analytics Workspace**: Centralized log collection with 30-day retention.
+- **Alert Rules**:
+  - **Fatal Errors**: Triggers if the clipper encounters an exception.
+  - **Session Expiry**: Triggers if the clipper logs `MISSING_CLIENT_ID`, requiring a session refresh.
+- **Action Group**: Sends email notifications to the configured admin address.
+
+**Post-Deployment Step**: You will receive an email from "Microsoft Azure Alerts" to confirm your subscription to the Action Group. You **must click the confirmation link** to start receiving alerts.
+
 ### 1. Azure Resource Provider Registration
 Ensure the required Azure providers are registered in your subscription:
 ```bash

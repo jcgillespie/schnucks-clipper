@@ -28,4 +28,18 @@ module "container_job" {
   registry_server   = var.registry_server
   registry_username = var.registry_username
   registry_password = var.registry_password
+
+  log_analytics_workspace_id = module.observability.log_analytics_workspace_id
+}
+
+module "observability" {
+  source = "./modules/observability"
+
+  resource_group_name = azurerm_resource_group.this.name
+  location            = var.location
+  project_name        = var.project_name
+  environment         = var.environment
+  
+  action_group_email  = var.action_group_email
+  log_retention_days  = var.log_retention_days
 }
