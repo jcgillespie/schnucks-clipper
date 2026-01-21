@@ -92,6 +92,19 @@ tofu init
 tofu apply -var="image_name=ghcr.io/your-username/schnucks-clipper:latest"
 ```
 
+### 4. Upload Session Data
+
+After infrastructure is provisioned and you have generated a local session (Step 3 in Quickstart), upload the `session.json` to the Azure File Share so the container can access it:
+
+```bash
+az storage file upload \
+  --account-name schnucksclipperprodst \
+  --share-name clipper-data \
+  --source data/session.json \
+  --path session.json
+```
+
+
 ## 🛠️ Development
 
 - `npm test`: Run unit and integration tests.
