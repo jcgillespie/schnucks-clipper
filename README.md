@@ -7,9 +7,9 @@ Automated tool to clip all available Schnucks coupons using Playwright and Node.
 
 ## 🚀 Features
 
-- **Automated Clipping**: Efficiently fetches and clips all unclipped coupons via direct API calls.
-- **Session Persistence**: Implements Playwright's `APIRequestContext` to maintain authenticated sessions without browser overhead.
-- **Dockerized**: Optimized multi-stage build using Alpine Linux and the official Playwright image (< 500MB).
+- **Automated Clipping**: Efficiently fetches and clips all unclipped coupons via direct API calls (`fetch`), removing the need for a full browser runtime.
+- **Session Persistence**: Uses `session-init` script (Playwright) to generate sessions locally, then runs headless in the cloud.
+- **Dockerized**: Highly optimized multi-stage build using `esbuild` bundling and Alpine Linux. Final image size is **< 80MB** (down from ~500MB).
 - **Production Infrastructure**: Infrastructure as Code (OpenTofu/Terraform) including Azure Container App Jobs, Storage Mounts, and Remote State Management.
 - **Professional CI/CD**: Optimized GitHub Actions workflows with Docker layer caching, Buildx support, and concurrent deployment protection.
 
@@ -97,7 +97,8 @@ tofu apply -var="image_name=ghcr.io/your-username/schnucks-clipper:latest"
 - `npm test`: Run unit and integration tests.
 - `npm run lint`: Enforce code quality using ESLint 9.
 - `npm run build`: Compile TypeScript to ESM.
-- `docker build -t schnucks-clipper .`: Build local Docker image.
+- `npm run bundle`: Bundle the application into a single file using `esbuild`.
+- `docker build -t schnucks-clipper .`: Build local Docker image (uses bundling).
 
 ## 📄 License
 

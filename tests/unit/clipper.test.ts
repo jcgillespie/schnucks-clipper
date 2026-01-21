@@ -21,7 +21,7 @@ describe('Clipper Orchestration', () => {
 
   test('clipAllCoupons should process all available coupons', async () => {
     // Mock fetch
-    global.fetch = mock.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    global.fetch = mock.fn(async (input: RequestInfo | URL) => {
       const url = input.toString();
       if (url.includes('/api/coupon-api/v1/coupons')) {
         return {
@@ -54,7 +54,7 @@ describe('Clipper Orchestration', () => {
 
   test('clipAllCoupons should handle failures gracefully', async () => {
     // Mock fetch with failures
-    global.fetch = mock.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    global.fetch = mock.fn(async (input: RequestInfo | URL) => {
       const url = input.toString();
       if (url.includes('/api/coupon-api/v1/coupons')) {
         return {

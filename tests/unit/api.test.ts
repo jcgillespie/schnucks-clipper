@@ -1,4 +1,4 @@
-import { test, describe, before, after, beforeEach, afterEach, mock } from 'node:test';
+import { test, describe, beforeEach, afterEach, mock } from 'node:test';
 import assert from 'node:assert';
 import { getCoupons, clipCoupon, SessionData } from '../../src/api.js';
 
@@ -20,7 +20,7 @@ describe('API Client', () => {
 
   test('getCoupons should parse API response correctly', async () => {
     // Mock fetch for getCoupons
-    global.fetch = mock.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    global.fetch = mock.fn(async (input: RequestInfo | URL) => {
       if (input.toString().includes('/api/coupon-api/v1/coupons')) {
         return {
           ok: true,
@@ -46,7 +46,7 @@ describe('API Client', () => {
 
   test('clipCoupon should return true on success', async () => {
     // Mock fetch for clipCoupon
-    global.fetch = mock.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    global.fetch = mock.fn(async (input: RequestInfo | URL) => {
       if (input.toString().includes('/api/coupon-api/v1/clipped')) {
         return {
           ok: true,

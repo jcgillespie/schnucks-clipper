@@ -21,7 +21,7 @@ describe('Integration: Coupon Clipping Flow', () => {
 
   test('Full flow with mocks should complete successfully', async () => {
     // Mock fetch for both list and clip endpoints
-    global.fetch = mock.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    global.fetch = mock.fn(async (input: RequestInfo | URL) => {
       const url = input.toString();
 
       if (url.includes('/api/coupon-api/v1/coupons')) {

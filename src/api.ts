@@ -57,31 +57,27 @@ export async function getCoupons(sessionData: SessionData): Promise<Coupon[]> {
   const url = `${config.schnucksBaseUrl}/api/coupon-api/v1/coupons`;
   const clientId = getClientId(sessionData);
 
-  try {
-    logger.debug('Fetching coupons from API', { url, clientId });
+  logger.debug('Fetching coupons from API', { url, clientId });
 
-    const response = await fetch(url, {
-      headers: getHeaders(clientId, sessionData),
-    });
+  const response = await fetch(url, {
+    headers: getHeaders(clientId, sessionData),
+  });
 
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        throw new Error('AUTH_FAILED: Session has expired or is invalid.');
-      }
-      throw new Error(`API_ERROR: Failed to fetch coupons.Status: ${response.status} `);
+  if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      throw new Error('AUTH_FAILED: Session has expired or is invalid.');
     }
-
-    const { data } = (await response.json()) as { data: RawCoupon[] | null };
-    return (data || [])
-      .filter((c: RawCoupon) => c.clippedDate === null && c.expired === false)
-      .map((c: RawCoupon) => ({
-        id: String(c.id),
-        description: c.description || 'No description',
-        isClipped: false,
-      }));
-  } catch (error) {
-    throw error;
+    throw new Error(`API_ERROR: Failed to fetch coupons.Status: ${response.status} `);
   }
+
+  const { data } = (await response.json()) as { data: RawCoupon[] | null };
+  return (data || [])
+    .filter((c: RawCoupon) => c.clippedDate === null && c.expired === false)
+    .map((c: RawCoupon) => ({
+      id: String(c.id),
+      description: c.description || 'No description',
+      isClipped: false,
+    }));
 }
 
 export async function clipCoupon(sessionData: SessionData, couponId: string): Promise<boolean> {

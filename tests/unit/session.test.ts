@@ -29,7 +29,10 @@ describe('Session Management', () => {
   test('loadSessionData should return empty structure if session file is missing', async () => {
     // Override config session file for test
     const originalSessionFile = config.sessionFile;
-    (config as { sessionFile: string }).sessionFile = path.join(config.dataPath, 'non-existent.json');
+    (config as { sessionFile: string }).sessionFile = path.join(
+      config.dataPath,
+      'non-existent.json',
+    );
 
     try {
       const sessionData = await loadSessionData();
