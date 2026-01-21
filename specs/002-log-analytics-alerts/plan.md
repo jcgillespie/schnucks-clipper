@@ -23,7 +23,7 @@ The goal of this feature is to provide robust monitoring and alerting for the Sc
   the iteration process.
 -->
 
-**Language/Version**: Node.js 20+ / TypeScript  
+**Language/Version**: Node.js 24+ / TypeScript  
 **Primary Dependencies**: Playwright, Azure Monitor (Platform Features)  
 **Storage**: Azure File Share (existing), Azure Log Analytics Workspace (new)  
 **Testing**: Native Node.js `node:test` (via `tsx`)  

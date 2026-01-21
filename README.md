@@ -24,7 +24,7 @@ Automated tool to clip all available Schnucks coupons using Playwright and Node.
 
 ### 1. Prerequisites
 
-- Node.js 20+
+- Node.js 24+
 - Docker
 - Azure CLI (for infrastructure and backend setup)
 - OpenTofu (or Terraform 1.5+)
@@ -104,7 +104,6 @@ az storage file upload \
   --path session.json
 ```
 
-
 ## 🛠️ Development
 
 - `npm test`: Run unit and integration tests.
@@ -115,4 +114,4 @@ az storage file upload \
 
 ## 📄 License
 
-MIT
+ISC

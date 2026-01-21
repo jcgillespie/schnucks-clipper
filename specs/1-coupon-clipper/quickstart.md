@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- **Node.js**: 20.x (LTS)
+- **Node.js**: 24.x (LTS)
 - **Docker**: For containerized runs and CI/CD validation.
 - **OpenTofu**: (or Terraform 1.6+) for infrastructure management.
 - **Azure CLI**: Logged in to the target subscription.

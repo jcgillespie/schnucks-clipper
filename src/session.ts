@@ -42,13 +42,32 @@ export async function saveSessionData(sessionData: SessionData): Promise<void> {
 
 export async function isSessionValid(sessionData: SessionData): Promise<boolean> {
   const cookies = sessionData.cookies;
-  // Simple check: do we have a session cookie?
-  const hasAuthToken = cookies.some(
+  const nowSeconds = Date.now() / 1000;
+
+  if (!sessionData.clientId) {
+    logger.warn(
+      'MISSING_CLIENT_ID: schnucks-client-id not found in session data. Please re-authenticate.',
+    );
+    return false;
+  }
+
+  if (!cookies || cookies.length === 0) {
+    logger.warn('RE-AUTHENTICATE: No cookies found in session data. Please re-authenticate.');
+    return false;
+  }
+
+  const authCookies = cookies.filter(
     (c) => c.name.toLowerCase().includes('token') || c.name.toLowerCase().includes('session'),
   );
+  const hasValidAuthCookie = authCookies.some((c) => c.expires <= 0 || c.expires > nowSeconds);
 
-  if (!hasAuthToken) {
-    logger.warn('Session invalid or expired: No authentication tokens found in cookies.');
+  if (authCookies.length === 0) {
+    logger.warn('RE-AUTHENTICATE: No authentication cookies found. Please re-authenticate.');
+    return false;
+  }
+
+  if (!hasValidAuthCookie) {
+    logger.warn('RE-AUTHENTICATE: Authentication cookies have expired. Please re-authenticate.');
     return false;
   }
 

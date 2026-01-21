@@ -6,10 +6,10 @@
 
 ### Node.js Runtime
 
-| Decision         | Node.js 20 LTS (Alpine)                                                             |
+| Decision         | Node.js 24 LTS (Alpine 3.23)                                                        |
 | ---------------- | ----------------------------------------------------------------------------------- |
 | **Rationale**    | LTS version ensures long-term support; Alpine base reduces image size significantly |
-| **Alternatives** | Node.js 18 (older), Node.js 21 (not LTS)                                            |
+| **Alternatives** | Node.js 22 (older LTS), Node.js 23 (not LTS)                                        |
 
 ### Playwright vs Puppeteer
 

@@ -1,5 +1,5 @@
 # --- Stage 1: Build ---
-FROM node:25-alpine3.22 AS builder
+FROM node:24-alpine3.23 AS builder
 
 WORKDIR /usr/src/app
 
@@ -13,21 +13,20 @@ RUN npm run bundle
 
 # --- Stage 2: Runtime ---
 # Stage 2: Build a minimal distroless image
-FROM alpine:3.22
+FROM alpine:3.23
 # Set environment variables
 ENV NODE_ENV=production
 ENV DATA_PATH=/data
 ENV SESSION_FILE=/data/session.json
 
-# Install minimal Node.js runtime (no npm)
 RUN apk add --no-cache \
-    nodejs \
+    nodejs=24.13.0-r0 \
     ca-certificates \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/*
 
 WORKDIR /usr/src/app
 RUN mkdir /data
-COPY --from=builder /usr/src/app/dist/index.js ./index.js
+COPY --from=builder /usr/src/app/dist/index.cjs ./index.cjs
 
-CMD ["node", "index.js"]
+CMD ["node", "index.cjs"]
