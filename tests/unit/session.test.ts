@@ -5,7 +5,7 @@ import path from 'path';
 import playwright from 'playwright-chromium';
 const { chromium } = playwright;
 type Browser = import('playwright-chromium').Browser;
-import { loadContext, saveContext } from '../../src/session.js';
+import { loadSessionData, saveSessionData } from '../../src/session.js';
 import { config } from '../../src/config.js';
 
 describe('Session Management', () => {
@@ -26,30 +26,42 @@ describe('Session Management', () => {
     }
   });
 
-  test('loadContext should create a new context if session file is missing', async () => {
-    const context = await loadContext(browser);
-    assert.ok(context);
-    await context.close();
+  test('loadSessionData should return empty structure if session file is missing', async () => {
+    // Override config session file for test
+    const originalSessionFile = config.sessionFile;
+    (config as { sessionFile: string }).sessionFile = path.join(
+      config.dataPath,
+      'non-existent.json',
+    );
+
+    try {
+      const sessionData = await loadSessionData();
+      assert.deepStrictEqual(sessionData, { cookies: [], clientId: '' });
+    } finally {
+      (config as { sessionFile: string }).sessionFile = originalSessionFile;
+    }
   });
 
-  test('saveContext should persist storage state to disk', async () => {
-    const context = await browser.newContext();
-    await context.addCookies([
-      {
-        name: 'test-cookie',
-        value: 'test-value',
-        domain: 'example.com',
-        path: '/',
-        expires: Date.now() / 1000 + 3600,
-      },
-    ]);
+  test('saveSessionData should persist storage state to disk', async () => {
+    const sessionData = {
+      cookies: [
+        {
+          name: 'test-cookie',
+          value: 'test-value',
+          domain: 'example.com',
+          path: '/',
+          expires: Date.now() / 1000 + 3600,
+        },
+      ],
+      clientId: 'test-client-id',
+    };
 
     // Override config session file for test
     const originalSessionFile = config.sessionFile;
     (config as { sessionFile: string }).sessionFile = testSessionPath;
 
     try {
-      await saveContext(context);
+      await saveSessionData(sessionData);
       await fs.access(testSessionPath);
       const content = JSON.parse(await fs.readFile(testSessionPath, 'utf8')) as {
         cookies: { name: string }[];
@@ -57,7 +69,6 @@ describe('Session Management', () => {
       assert.ok(content.cookies.some((c) => c.name === 'test-cookie'));
     } finally {
       (config as { sessionFile: string }).sessionFile = originalSessionFile;
-      await context.close();
     }
   });
 });

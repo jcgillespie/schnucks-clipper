@@ -1,5 +1,4 @@
-type BrowserContext = import('playwright-chromium').BrowserContext;
-import { getCoupons, clipCoupon, withRetry } from './api.js';
+import { getCoupons, clipCoupon, withRetry, SessionData } from './api.js';
 import { logger } from './logger.js';
 
 export interface ClippingSummary {
@@ -9,10 +8,10 @@ export interface ClippingSummary {
   skipped: number;
 }
 
-export async function clipAllCoupons(context: BrowserContext): Promise<ClippingSummary> {
+export async function clipAllCoupons(sessionData: SessionData): Promise<ClippingSummary> {
   logger.info('Starting coupon clipping process...');
 
-  const coupons = await withRetry(() => getCoupons(context));
+  const coupons = await withRetry(() => getCoupons(sessionData));
   const summary: ClippingSummary = {
     total: coupons.length,
     clipped: 0,
@@ -24,7 +23,7 @@ export async function clipAllCoupons(context: BrowserContext): Promise<ClippingS
 
   for (const coupon of coupons) {
     try {
-      const success = await clipCoupon(context, coupon.id);
+      const success = await clipCoupon(sessionData, coupon.id);
       if (success) {
         summary.clipped++;
         logger.info(`Successfully clipped coupon: ${coupon.id} `, {

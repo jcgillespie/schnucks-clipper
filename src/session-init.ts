@@ -1,7 +1,8 @@
 import playwright from 'playwright-chromium';
 const { chromium } = playwright;
 import { logger } from './logger.js';
-import { saveContext } from './session.js';
+import { saveSessionData } from './session.js';
+import { SessionData } from './api.js';
 import { config } from './config.js';
 
 async function initializeSession() {
@@ -26,7 +27,31 @@ async function initializeSession() {
   });
 
   try {
-    await saveContext(context);
+    const storageState = await context.storageState();
+
+    // Extract client ID from localStorage
+    const origin = storageState.origins.find(
+      (o) => o.origin === config.schnucksBaseUrl || o.origin.includes('schnucks.com'),
+    );
+    const clientIdObj = origin?.localStorage.find((item) => item.name === 'schnucks-client-id');
+
+    if (!clientIdObj) {
+      throw new Error('Could not find schnucks-client-id in storage state');
+    }
+
+    // Explicitly map Playwright storage state to SessionData to ensure compatibility
+    const sessionData: SessionData = {
+      clientId: clientIdObj.value,
+      cookies: storageState.cookies.map((c) => ({
+        name: c.name,
+        value: c.value,
+        domain: c.domain,
+        path: c.path,
+        expires: c.expires,
+      })),
+    };
+
+    await saveSessionData(sessionData);
     logger.info('Session initialization complete! You can now run the clipper.');
   } catch (error) {
     logger.error('Failed to save session context during initialization.', {
