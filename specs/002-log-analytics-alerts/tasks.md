@@ -102,6 +102,7 @@
 ## Implementation Strategy
 
 ### MVP First (Visibility)
+
 1. Setup Log Analytics (Phase 1 & 2).
 2. Implement Fatal Error Alert (Phase 3).
 3. Validate with synthetic failure.

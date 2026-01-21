@@ -59,7 +59,9 @@ npm run dev
 The project is designed to run as an **Azure Container App Job** on a daily schedule.
 
 ### 🔔 Monitoring & Alerts
+
 The infrastructure automatically sets up:
+
 - **Log Analytics Workspace**: Centralized log collection with 30-day retention.
 - **Alert Rules**:
   - **Fatal Errors**: Triggers if the clipper encounters an exception.
@@ -69,16 +71,20 @@ The infrastructure automatically sets up:
 **Post-Deployment Step**: You will receive an email from "Microsoft Azure Alerts" to confirm your subscription to the Action Group. You **must click the confirmation link** to start receiving alerts.
 
 ### 1. Azure Resource Provider Registration
+
 Ensure the required Azure providers are registered in your subscription:
+
 ```bash
 az provider register --namespace Microsoft.App
 az provider register --namespace Microsoft.OperationalInsights
 ```
 
 ### 2. Remote State Backend
+
 Create an Azure Storage account to host the OpenTofu state file and update the `backend` block in `infra/versions.tf`.
 
 ### 3. Infrastructure Provisioning
+
 ```bash
 cd infra
 export ARM_SUBSCRIPTION_ID="your-subscription-id"

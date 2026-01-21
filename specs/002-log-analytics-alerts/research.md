@@ -1,9 +1,11 @@
 # Research: Log Analytics & Alerts
 
 ## Decision: Azure Native Monitoring
+
 We will use Azure Log Analytics combined with Azure Monitor scheduled query rules.
 
 ### Rationale:
+
 - **Zero code change**: Container App Jobs automatically stream STDOUT/STDERR to the linked Log Analytics workspace.
 - **Cost-effective**: Log Analytics has a generous free tier for ingestion and retention for small projects.
 - **Power**: KQL (Kusto Query Language) allows for precise filtering to avoid alert fatigue.
@@ -12,6 +14,7 @@ We will use Azure Log Analytics combined with Azure Monitor scheduled query rule
 ## KQL Query Patterns
 
 ### Fatal Execution Errors
+
 ```kusto
 ContainerAppConsoleLogs_CL
 | where ContainerJobName_s == "schnucks-clipper-prod-job"
@@ -20,6 +23,7 @@ ContainerAppConsoleLogs_CL
 ```
 
 ### Session Refresh Required
+
 ```kusto
 ContainerAppConsoleLogs_CL
 | where ContainerJobName_s == "schnucks-clipper-prod-job"

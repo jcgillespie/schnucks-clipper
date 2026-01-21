@@ -10,6 +10,7 @@
 The goal of this feature is to provide robust monitoring and alerting for the Schnucks Coupon Clipper. We will integrate Azure Container App Job logs with a Log Analytics Workspace and configure Azure Monitor Alerts to notify the user via Email/SMS when the job fails or when re-authentication is required.
 
 ### Technical Approach
+
 1.  **Infrastructure**: Provision an `azurerm_log_analytics_workspace` and link it to the Container App Environment.
 2.  **Alerting**: Create `azurerm_monitor_scheduled_query_rules_alert` resources that execute KQL queries against the logs.
 3.  **Action Groups**: Provision an `azurerm_monitor_action_group` to handle the notification delivery.

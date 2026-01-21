@@ -1,36 +1,46 @@
 # --- Stage 1: Build ---
-FROM node:20-slim AS builder
+FROM node:25-alpine3.22 AS builder
 
 WORKDIR /usr/src/app
 
-# Install build dependencies
+# Install dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 # Copy source and build
 COPY . .
 RUN npm run build
 
 # --- Stage 2: Runtime ---
-FROM mcr.microsoft.com/playwright:v1.57.0-jammy
-
-WORKDIR /usr/src/app
-
-# Copy production dependencies and compiled code
-COPY package*.json ./
-RUN npm install --only=production
-
-COPY --from=builder /usr/src/app/dist ./dist
-
-# Create data directory for session persistence
-RUN mkdir -p /data && chown -R pwuser:pwuser /data
-
+# Stage 2: Build a minimal distroless image
+FROM alpine:3.22
 # Set environment variables
+ENV PLAYWRIGHT_BROWSERS_PATH=/usr/bin
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+ENV CHROMIUM_PATH=/usr/bin/chromium-browser
 ENV NODE_ENV=production
 ENV DATA_PATH=/data
 ENV SESSION_FILE=/data/session.json
 
-# Use non-root user from Playwright image
-USER pwuser
+# Install Chromium and dependencies
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ttf-freefont \
+    nodejs \
+    npm \
+    ca-certificates \
+    && rm -rf /var/cache/apk/* \
+    && rm -rf /tmp/*
+
+WORKDIR /usr/src/app
+RUN mkdir /data
+COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=builder /usr/src/app/package*.json ./
+
+# Only copy specific required dependencies
+RUN npm ci --include=prod
 
 CMD ["node", "dist/index.js"]
