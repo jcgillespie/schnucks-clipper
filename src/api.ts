@@ -27,7 +27,9 @@ async function getClientId(context: BrowserContext): Promise<string> {
   const clientIdObj = origin?.localStorage.find((item) => item.name === 'schnucks-client-id');
 
   if (!clientIdObj) {
-    throw new Error('MISSING_CLIENT_ID: schnucks-client-id not found in session localStorage. Please re-authenticate.');
+    throw new Error(
+      'MISSING_CLIENT_ID: schnucks-client-id not found in session localStorage. Please re-authenticate.',
+    );
   }
 
   logger.debug('Extracted schnucks-client-id from localStorage', { clientId: clientIdObj.value });

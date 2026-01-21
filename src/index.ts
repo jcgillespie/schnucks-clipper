@@ -7,7 +7,11 @@ import { clipAllCoupons } from './clipper.js';
 async function main() {
   logger.info('Schnucks Coupon Clipper starting...');
 
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true,
+    executablePath: process.env.CHROMIUM_PATH,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  });
   const context = await loadContext(browser);
 
   try {
