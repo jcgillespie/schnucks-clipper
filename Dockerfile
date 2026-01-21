@@ -42,6 +42,6 @@ COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/package*.json ./
 
 # Only copy specific required dependencies
-RUN npm ci --include=prod --omit=dev --omit=optional --omit=peer
+RUN npm ci --include=prod
 
 CMD ["node", "dist/index.js"]
