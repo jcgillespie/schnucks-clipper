@@ -2,7 +2,6 @@
 FROM node:25-alpine3.22 AS builder
 
 WORKDIR /usr/src/app
-RUN mkdir /data
 
 # Install dependencies
 COPY package*.json ./
