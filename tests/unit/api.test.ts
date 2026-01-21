@@ -1,73 +1,63 @@
-import { test, describe, before, after } from 'node:test';
+import { test, describe, before, after, beforeEach, afterEach, mock } from 'node:test';
 import assert from 'node:assert';
-import playwright from 'playwright-chromium';
-const { chromium } = playwright;
-type Browser = import('playwright-chromium').Browser;
-type BrowserContext = import('playwright-chromium').BrowserContext;
-type APIResponse = import('playwright-chromium').APIResponse;
-import { getCoupons, clipCoupon } from '../../src/api.js';
+import { getCoupons, clipCoupon, SessionData } from '../../src/api.js';
 
 describe('API Client', () => {
-  let browser: Browser;
-  let context: BrowserContext;
+  const sessionData: SessionData = {
+    cookies: [],
+    clientId: 'test-client-id',
+  };
 
-  before(async () => {
-    browser = await chromium.launch();
-    context = await browser.newContext({
-      storageState: {
-        cookies: [],
-        origins: [
-          {
-            origin: 'https://schnucks.com',
-            localStorage: [{ name: 'schnucks-client-id', value: 'test-client-id' }],
-          },
-        ],
-      },
-    });
+  let originalFetch: typeof global.fetch;
+
+  beforeEach(() => {
+    originalFetch = global.fetch;
   });
 
-  after(async () => {
-    await context.close();
-    await browser.close();
+  afterEach(() => {
+    global.fetch = originalFetch;
   });
 
   test('getCoupons should parse API response correctly', async () => {
-    await context.route('**/api/coupon-api/v1/coupons', (route) => {
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          codes: ['0'],
-          messages: ['success'],
-          data: [
-            { id: 123, description: 'Test Coupon 1', clippedDate: null, expired: false },
-            { id: 456, description: 'Test Coupon 2', clippedDate: '2024-01-01', expired: false }, // Already clipped
-            { id: 789, description: 'Test Coupon 3', clippedDate: null, expired: true }, // Expired
-          ],
-        }),
-      });
+    // Mock fetch for getCoupons
+    global.fetch = mock.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (input.toString().includes('/api/coupon-api/v1/coupons')) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            codes: ['0'],
+            messages: ['success'],
+            data: [
+              { id: 123, description: 'Test Coupon 1', clippedDate: null, expired: false },
+              { id: 456, description: 'Test Coupon 2', clippedDate: '2024-01-01', expired: false }, // Already clipped
+              { id: 789, description: 'Test Coupon 3', clippedDate: null, expired: true }, // Expired
+            ],
+          }),
+        } as Response;
+      }
+      throw new Error(`Unexpected fetch to ${input}`);
     });
 
-    const coupons = await getCoupons(context);
+    const coupons = await getCoupons(sessionData);
     assert.strictEqual(coupons.length, 1);
     assert.strictEqual(coupons[0].id, '123');
-    await context.unroute('**/api/coupon-api/v1/coupons');
   });
 
   test('clipCoupon should return true on success', async () => {
-    // Mock context.request.post explicitly because context.route doesn't intercept APIRequestContext
-    context.request.post = async (url: string) => {
-      if (url.includes('/api/coupon-api/v1/clipped')) {
+    // Mock fetch for clipCoupon
+    global.fetch = mock.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (input.toString().includes('/api/coupon-api/v1/clipped')) {
         return {
-          ok: () => true,
-          status: () => 200,
+          ok: true,
+          status: 200,
           text: async () => 'OK',
-        } as APIResponse;
+        } as Response;
       }
-      throw new Error(`Unexpected POST to ${url}`);
-    };
+      throw new Error(`Unexpected POST to ${input}`);
+    });
 
-    const success = await clipCoupon(context, '123');
+    const success = await clipCoupon(sessionData, '123');
     assert.strictEqual(success, true);
   });
 });

@@ -1,21 +1,16 @@
-import playwright from 'playwright-chromium';
-const { chromium } = playwright;
 import { logger } from './logger.js';
-import { loadContext, saveContext, isSessionValid } from './session.js';
+import { loadSessionData, isSessionValid } from './session.js';
 import { clipAllCoupons } from './clipper.js';
 
 async function main() {
   logger.info('Schnucks Coupon Clipper starting...');
 
-  const browser = await chromium.launch({
-    headless: true,
-    executablePath: process.env.CHROMIUM_PATH,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  });
-  const context = await loadContext(browser);
+  // 1. Load session data directly from file
+  const sessionData = await loadSessionData();
 
   try {
-    if (!(await isSessionValid(context))) {
+    // 2. Validate session
+    if (!(await isSessionValid(sessionData))) {
       logger.error('CRITICAL: Valid session not found. Please follow these steps:');
       logger.error('1. Run the clipping application locally with `npm run session:init`');
       logger.error('2. Perform manual login and TFA');
@@ -23,9 +18,12 @@ async function main() {
       process.exit(1);
     }
 
-    const summary = await clipAllCoupons(context);
+    // 3. Clip coupons using the session data
+    const summary = await clipAllCoupons(sessionData);
 
-    await saveContext(context);
+    // Note: We are not saving the session back because we are using simple fetch
+    // and not automatically rotating cookies. If cookie rotation is needed,
+    // we would need to parse 'set-cookie' headers from responses.
 
     logger.info('Job completed successfully.', { summary });
   } catch (error) {
@@ -34,9 +32,6 @@ async function main() {
       stack: error instanceof Error ? error.stack : undefined,
     });
     process.exit(1);
-  } finally {
-    await browser.close();
-    logger.info('Browser closed. Exiting.');
   }
 }
 
