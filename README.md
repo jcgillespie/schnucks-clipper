@@ -81,27 +81,36 @@ az provider register --namespace Microsoft.OperationalInsights
 
 ### 2. Remote State Backend
 
-Create an Azure Storage account to host the OpenTofu state file and update the `backend` block in `infra/versions.tf`.
+Create an Azure Storage account to host the OpenTofu state file, then create a local `infra/backend.hcl` based on `infra/backend.hcl.example`. Initialize with:
+
+```bash
+cd infra
+tofu init -backend-config=backend.hcl
+```
 
 ### 3. Infrastructure Provisioning
 
 ```bash
 cd infra
 export ARM_SUBSCRIPTION_ID="your-subscription-id"
-tofu init
+tofu init -backend-config=backend.hcl
 tofu apply -var="image_name=ghcr.io/your-username/schnucks-clipper:latest"
 ```
 
 ### 4. Upload Session Data
 
-After infrastructure is provisioned and you have generated a local session (Step 3 in Quickstart), upload the `session.json` to the Azure File Share so the container can access it:
+After infrastructure is provisioned and you have generated a local session (Step 3 in Quickstart), upload the `session.json` to the Azure File Share so the container can access it. Use the `storage_account_name` and `file_share_name` outputs from OpenTofu, and supply the account key:
+
+> [!TIP]
+> You can retrieve these values after provisioning by running `tofu output` inside the `infra/` directory.
 
 ```bash
 az storage file upload \
-  --account-name schnucksclipperprodst \
-  --share-name clipper-data \
+  --account-name <storage_account_name> \
+  --share-name <file_share_name> \
   --source data/session.json \
-  --path session.json
+  --path session.json \
+  --account-key <storage_account_key>
 ```
 
 ## 🛠️ Development
