@@ -90,9 +90,13 @@ resource "azurerm_monitor_scheduled_query_rules_alert" "job_failure" {
   enabled        = true
 
   query = <<-KQL
+    let jobName = "${var.project_name}-${var.environment}-job";
     ContainerAppSystemLogs_CL
-    | where ContainerJobName_s == "${var.project_name}-${var.environment}-job"
-    | where Reason_s == "BackoffLimitExceeded" or Reason_s == "Error" or Log_s contains "failed container"
+    | where JobName_s == jobName or Log_s has jobName
+    | where Reason_s in ("BackoffLimitExceeded", "Error")
+      or Log_s has "failed container"
+      or Log_s matches regex @"exit code: [1-9]\d*"
+      or Log_s has "exited with status Failed"
   KQL
 
   severity    = 1
