@@ -20,7 +20,7 @@ ENV DATA_PATH=/data
 ENV SESSION_FILE=/data/session.json
 
 RUN apk add --no-cache \
-    nodejs=24.13.0-r0 \
+    nodejs \
     ca-certificates \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/*

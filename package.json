@@ -3,17 +3,18 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Automated coupon clipper for Schnucks",
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
   "scripts": {
     "build": "tsc",
     "bundle": "esbuild src/index.ts --bundle --platform=node --target=node24 --format=cjs --outfile=dist/index.cjs",
-    "start": "node dist/index.js",
+    "start": "node dist/index.cjs",
     "dev": "tsx src/index.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/unit/config.test.ts tests/unit/logger.test.ts tests/unit/session.test.ts tests/unit/api.test.ts tests/unit/clipper.test.ts tests/integration/clipper.integration.test.ts",
+    "test": "tsx --test tests/unit/config.test.ts tests/unit/logger.test.ts tests/unit/session.test.ts tests/unit/api.test.ts tests/unit/clipper.test.ts tests/unit/weekly-summary-config.test.ts tests/unit/weekly-summary.test.ts tests/integration/clipper.integration.test.ts",
+    "test:weekly-summary": "tsx scripts/test-weekly-summary-local.ts",
     "session:init": "tsx src/session-init.ts"
   },
   "keywords": [
@@ -25,11 +26,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "dotenv": "^16.3.1"
+    "@azure/identity": "^4.4.0",
+    "@azure/monitor-query-logs": "^1.0.0",
+    "dotenv": "^16.3.1",
+    "nodemailer": "^7.0.12"
   },
   "devDependencies": {
     "@types/node": "^20.10.5",
-    "esbuild": "^0.24.2",
+    "@types/nodemailer": "^6.4.14",
+    "esbuild": "^0.27.2",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^9.1.2",
     "globals": "^17.0.0",

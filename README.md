@@ -38,6 +38,15 @@ npm install
 npx playwright install chromium
 ```
 
+**Optional: Environment Configuration**
+
+Copy `.env.example` to `.env` and customize if needed:
+
+- `SCHNUCKS_BASE_URL`: Schnucks website URL (default: `https://schnucks.com`)
+- `DATA_PATH`: Path for session data storage (default: `./data`)
+- `SESSION_FILE`: Path to session file (default: `{DATA_PATH}/session.json`)
+- `LOG_LEVEL`: Logging level (default: `info`)
+
 ### 3. Initial Session Setup (CRITICAL)
 
 Since Schnucks uses Two-Factor Authentication (2FA), the initial session must be established interactively:
@@ -66,7 +75,9 @@ The infrastructure automatically sets up:
 - **Alert Rules**:
   - **Fatal Errors**: Triggers if the clipper encounters an exception.
   - **Session Expiry**: Triggers if the clipper logs `MISSING_CLIENT_ID`, requiring a session refresh.
+  - **Job Failure**: Triggers when the container job fails at the system level (exit codes, backoff limits, etc.).
 - **Action Group**: Sends email notifications to the configured admin address.
+- **Weekly Job Summary**: A separate container job that runs every Sunday to send a weekly email summary of all job executions in the past 7 days with their final status and coupon counts.
 
 **Post-Deployment Step**: You will receive an email from "Microsoft Azure Alerts" to confirm your subscription to the Action Group. You **must click the confirmation link** to start receiving alerts.
 
@@ -88,38 +99,152 @@ cd infra
 tofu init -backend-config=backend.hcl
 ```
 
-### 3. Infrastructure Provisioning
+### 3. Azure Authentication Setup
+
+For infrastructure provisioning, you need Azure credentials. You can either:
+
+**Option A: Use Azure CLI (for local deployment)**
+
+```bash
+az login
+az account set --subscription "your-subscription-id"
+export ARM_SUBSCRIPTION_ID="your-subscription-id"
+```
+
+**Option B: Create a Service Principal (for CI/CD)**
+
+```bash
+az ad sp create-for-rbac --name "schnucks-clipper-sp" \
+  --role contributor \
+  --scopes /subscriptions/{subscription-id}
+```
+
+Save the output values:
+
+- `appId` → `AZURE_CLIENT_ID`
+- `password` → `AZURE_CLIENT_SECRET`
+- `tenant` → `AZURE_TENANT_ID`
+- `subscription-id` → `AZURE_SUBSCRIPTION_ID`
+
+### 4. Infrastructure Provisioning
+
+**Required Variables:**
+
+- `image_name`: Full Docker image name and tag (e.g., `ghcr.io/your-username/schnucks-clipper:latest`)
+- `registry_username`: Container registry username (e.g., your GitHub username for GHCR)
+- `registry_password`: Container registry password/token (e.g., GitHub Personal Access Token with `read:packages` scope)
+- `action_group_email`: Email address for alert notifications
+
+**Optional Variables (for Weekly Summary Email):**
+
+- `smtp_host`: SMTP server hostname (e.g., `smtp.mailgun.org` for Mailgun)
+- `smtp_port`: SMTP server port (default: `587` for TLS)
+- `smtp_user`: SMTP username (e.g., your Mailgun email address)
+- `smtp_password`: SMTP password (e.g., your Mailgun API key)
+- `weekly_summary_email_from`: Email address to send weekly summary from (defaults to `smtp_user` if not set)
+- `weekly_summary_email_to`: Email address to send weekly summary to (defaults to `action_group_email` if not set)
+
+**Deploy Infrastructure:**
 
 ```bash
 cd infra
 export ARM_SUBSCRIPTION_ID="your-subscription-id"
 tofu init -backend-config=backend.hcl
-tofu apply -var="image_name=ghcr.io/your-username/schnucks-clipper:latest"
+tofu apply \
+  -var="image_name=ghcr.io/your-username/schnucks-clipper:latest" \
+  -var="registry_username=your-github-username" \
+  -var="registry_password=your-ghcr-token" \
+  -var="action_group_email=your-email@example.com" \
+  -var="smtp_host=smtp.mailgun.org" \
+  -var="smtp_port=587" \
+  -var="smtp_user=your-mailgun-email@yourdomain.com" \
+  -var="smtp_password=your-mailgun-api-key" \
+  -var="weekly_summary_email_from=your-mailgun-email@yourdomain.com"
 ```
 
-### 4. Upload Session Data
+> [!NOTE]
+> The weekly summary job is **optional**. If you don't provide SMTP configuration variables, the weekly summary job will not be created. The code is fully abstracted and works with any SMTP provider (Mailgun, SMTP2Go, Gmail, SendGrid, etc.) - just change the `smtp_host` and credentials.
 
-After infrastructure is provisioned and you have generated a local session (Step 3 in Quickstart), upload the `session.json` to the Azure File Share so the container can access it. Use the `storage_account_name` and `file_share_name` outputs from OpenTofu, and supply the account key:
+### 5. Upload Session Data
 
-> [!TIP]
-> You can retrieve these values after provisioning by running `tofu output` inside the `infra/` directory.
+After infrastructure is provisioned and you have generated a local session (Step 3 in Quickstart), upload the `session.json` to the Azure File Share so the container can access it.
+
+**Retrieve Output Values:**
+
+```bash
+cd infra
+tofu output storage_account_name
+tofu output file_share_name
+tofu output -raw storage_account_key  # -raw removes quotes from sensitive output
+```
+
+**Upload Session File:**
 
 ```bash
 az storage file upload \
-  --account-name <storage_account_name> \
-  --share-name <file_share_name> \
+  --account-name $(cd infra && tofu output -raw storage_account_name) \
+  --share-name $(cd infra && tofu output -raw file_share_name) \
   --source data/session.json \
   --path session.json \
-  --account-key <storage_account_key>
+  --account-key $(cd infra && tofu output -raw storage_account_key)
 ```
+
+Or set them as variables for easier reuse:
+
+```bash
+STORAGE_ACCOUNT=$(cd infra && tofu output -raw storage_account_name)
+FILE_SHARE=$(cd infra && tofu output -raw file_share_name)
+STORAGE_KEY=$(cd infra && tofu output -raw storage_account_key)
+
+az storage file upload \
+  --account-name "$STORAGE_ACCOUNT" \
+  --share-name "$FILE_SHARE" \
+  --source data/session.json \
+  --path session.json \
+  --account-key "$STORAGE_KEY"
+```
+
+## 🔧 CI/CD Setup (Optional)
+
+If you want to use GitHub Actions for automated builds and deployments, configure the following secrets in your repository:
+
+**Required GitHub Secrets:**
+
+- `AZURE_CLIENT_ID`: Service principal application ID
+- `AZURE_CLIENT_SECRET`: Service principal password
+- `AZURE_SUBSCRIPTION_ID`: Azure subscription ID
+- `AZURE_TENANT_ID`: Azure tenant ID
+- `TFSTATE_RESOURCE_GROUP`: Resource group name for Terraform state storage
+- `TFSTATE_STORAGE_ACCOUNT`: Storage account name for Terraform state
+- `TFSTATE_CONTAINER`: Container name for Terraform state (e.g., `tfstate`)
+- `TFSTATE_KEY`: State file key (e.g., `terraform.tfstate`)
+- `GHCR_PAT`: GitHub Personal Access Token with `write:packages` scope (for pushing images)
+- `ACTION_GROUP_EMAIL`: Email address for alert notifications
+
+The workflows will automatically:
+
+1. Build and push Docker images to GitHub Container Registry on pushes to `main`
+2. Deploy infrastructure using OpenTofu
+3. Run Terraform validation on pull requests
 
 ## 🛠️ Development
 
 - `npm test`: Run unit and integration tests.
 - `npm run lint`: Enforce code quality using ESLint 9.
 - `npm run build`: Compile TypeScript to ESM.
-- `npm run bundle`: Bundle the application into a single file using `esbuild`.
+- `npm run bundle`: Bundle the application into a single file using `esbuild` (includes both clipper and weekly summary).
+- `npm run test:weekly-summary`: Test weekly summary functionality locally (see [Testing Guide](docs/testing-weekly-summary.md)).
 - `docker build -t schnucks-clipper .`: Build local Docker image (uses bundling).
+
+### Testing Weekly Summary Locally
+
+You can test the weekly summary feature without deploying to Azure. See [docs/testing-weekly-summary.md](docs/testing-weekly-summary.md) for detailed instructions.
+
+Quick test with mock data:
+
+```bash
+npm run test:weekly-summary -- --mock
+```
 
 ## 📄 License
 

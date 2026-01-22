@@ -29,7 +29,16 @@ module "container_job" {
   registry_username = var.registry_username
   registry_password = var.registry_password
 
-  log_analytics_workspace_id = module.observability.log_analytics_workspace_id
+  log_analytics_workspace_id            = module.observability.log_analytics_workspace_id
+  log_analytics_workspace_customer_id   = module.observability.log_analytics_workspace_customer_id
+
+  # Weekly summary configuration (optional)
+  smtp_host     = var.smtp_host
+  smtp_port     = var.smtp_port
+  smtp_user     = var.smtp_user
+  smtp_password = var.smtp_password
+  email_from    = var.weekly_summary_email_from
+  email_to      = var.weekly_summary_email_to != "" ? var.weekly_summary_email_to : var.action_group_email
 }
 
 module "observability" {

@@ -54,3 +54,41 @@ variable "log_retention_days" {
   type        = number
   default     = 30
 }
+
+# Weekly Summary Email Configuration (optional)
+variable "smtp_host" {
+  description = "SMTP server hostname (e.g., smtp.mailgun.org)"
+  type        = string
+  default     = ""
+}
+
+variable "smtp_port" {
+  description = "SMTP server port (default: 587 for TLS)"
+  type        = number
+  default     = 587
+}
+
+variable "smtp_user" {
+  description = "SMTP username (e.g., your Mailgun email address)"
+  type        = string
+  default     = ""
+}
+
+variable "smtp_password" {
+  description = "SMTP password (e.g., your Mailgun API key)"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "weekly_summary_email_from" {
+  description = "Email address to send weekly summary from"
+  type        = string
+  default     = ""
+}
+
+variable "weekly_summary_email_to" {
+  description = "Email address to send weekly summary to (defaults to action_group_email if not set)"
+  type        = string
+  default     = ""
+}

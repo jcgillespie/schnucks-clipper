@@ -75,12 +75,18 @@ jobs:
           tofu_version: 1.6.0
 
       - name: OpenTofu Init
-        run: >
-          tofu init
-          -backend-config="resource_group_name=${TFSTATE_RESOURCE_GROUP}"
-          -backend-config="storage_account_name=${TFSTATE_STORAGE_ACCOUNT}"
-          -backend-config="container_name=${TFSTATE_CONTAINER}"
-          -backend-config="key=${TFSTATE_KEY}"
+        # CD workflow runs on push to main, so secrets should be available.
+        # Still check to provide a clear error message if they're missing.
+        run: |
+          if [ -z "$TFSTATE_RESOURCE_GROUP" ] || [ -z "$TFSTATE_STORAGE_ACCOUNT" ] || [ -z "$TFSTATE_CONTAINER" ] || [ -z "$TFSTATE_KEY" ]; then
+            echo "Error: Backend configuration secrets are required for deployment"
+            exit 1
+          fi
+          tofu init \
+            -backend-config="resource_group_name=${TFSTATE_RESOURCE_GROUP}" \
+            -backend-config="storage_account_name=${TFSTATE_STORAGE_ACCOUNT}" \
+            -backend-config="container_name=${TFSTATE_CONTAINER}" \
+            -backend-config="key=${TFSTATE_KEY}"
 
       - name: OpenTofu Apply
         run: |

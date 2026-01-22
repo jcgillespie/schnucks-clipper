@@ -77,3 +77,45 @@ variable "log_analytics_workspace_id" {
   description = "ID of the Log Analytics Workspace for logging"
   type        = string
 }
+
+variable "log_analytics_workspace_customer_id" {
+  description = "Customer ID (workspace ID) of the Log Analytics Workspace for REST API queries"
+  type        = string
+}
+
+variable "smtp_host" {
+  description = "SMTP server hostname"
+  type        = string
+  default     = ""
+}
+
+variable "smtp_port" {
+  description = "SMTP server port"
+  type        = number
+  default     = 587
+}
+
+variable "smtp_user" {
+  description = "SMTP username"
+  type        = string
+  default     = ""
+}
+
+variable "smtp_password" {
+  description = "SMTP password"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "email_from" {
+  description = "Email address to send from"
+  type        = string
+  default     = ""
+}
+
+variable "email_to" {
+  description = "Email address to send to"
+  type        = string
+  default     = ""
+}

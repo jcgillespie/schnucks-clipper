@@ -45,12 +45,20 @@ jobs:
           tofu_version: 1.6.0
 
       - name: OpenTofu Init
-        run: >
-          tofu init
-          -backend-config="resource_group_name=${TFSTATE_RESOURCE_GROUP}"
-          -backend-config="storage_account_name=${TFSTATE_STORAGE_ACCOUNT}"
-          -backend-config="container_name=${TFSTATE_CONTAINER}"
-          -backend-config="key=${TFSTATE_KEY}"
+        # For PRs (especially external forks), secrets may not be available.
+        # Format and validate don't require backend state, so use -backend=false.
+        # For workflow_dispatch or when secrets are available, use backend config.
+        run: |
+          if [ -n "$TFSTATE_RESOURCE_GROUP" ] && [ -n "$TFSTATE_STORAGE_ACCOUNT" ] && [ -n "$TFSTATE_CONTAINER" ] && [ -n "$TFSTATE_KEY" ]; then
+            tofu init \
+              -backend-config="resource_group_name=${TFSTATE_RESOURCE_GROUP}" \
+              -backend-config="storage_account_name=${TFSTATE_STORAGE_ACCOUNT}" \
+              -backend-config="container_name=${TFSTATE_CONTAINER}" \
+              -backend-config="key=${TFSTATE_KEY}"
+          else
+            echo "Backend secrets not available, initializing without backend (format/validate only)"
+            tofu init -backend=false
+          fi
 
       - name: OpenTofu Format
         run: tofu fmt -check
@@ -59,10 +67,15 @@ jobs:
         run: tofu validate
 
       - name: OpenTofu Plan
+        # Plan requires backend state, so only run if backend was initialized
         run: |
-          tofu plan -no-color \
-            -var "image_name=ghcr.io/${{ github.repository }}:${{ github.event.inputs.image_tag || 'latest' }}" \
-            -var "registry_username=${{ github.actor }}" \
-            -var "registry_password=${{ secrets.GHCR_PAT }}" \
-            -var "action_group_email=${{ secrets.ACTION_GROUP_EMAIL }}"
+          if [ -n "$TFSTATE_RESOURCE_GROUP" ] && [ -n "$TFSTATE_STORAGE_ACCOUNT" ] && [ -n "$TFSTATE_CONTAINER" ] && [ -n "$TFSTATE_KEY" ]; then
+            tofu plan -no-color \
+              -var "image_name=ghcr.io/${{ github.repository }}:${{ github.event.inputs.image_tag || 'latest' }}" \
+              -var "registry_username=${{ github.actor }}" \
+              -var "registry_password=${{ secrets.GHCR_PAT }}" \
+              -var "action_group_email=${{ secrets.ACTION_GROUP_EMAIL }}"
+          else
+            echo "Skipping plan: Backend secrets not available (this is expected for external PRs)"
+          fi
         continue-on-error: true
