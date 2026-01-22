@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert';
-import { escapeHtml, formatEmailSummary, type ExecutionResult } from '../../src/weekly-summary.js';
+import { formatEmailSummary, type ExecutionResult } from '../../src/weekly-summary.js';
 
 describe('Weekly Summary Email Formatting', () => {
   test('should format empty execution list', () => {
@@ -31,7 +31,8 @@ describe('Weekly Summary Email Formatting', () => {
 
     assert.ok(html.includes('Succeeded'));
     assert.ok(html.includes('test-job-123'));
-    assert.ok(html.includes('"total": 5'));
+    // JSON is HTML-escaped, so quotes become &quot;
+    assert.ok(html.includes('&quot;total&quot;: 5'));
     assert.ok(text.includes('Succeeded'));
     assert.ok(text.includes('test-job-123'));
     assert.ok(text.includes('"total":5'));
@@ -129,6 +130,7 @@ describe('Weekly Summary Email Formatting', () => {
     assert.ok(!html.includes('<script>'));
     // Verify JSON summary is present and properly escaped
     assert.ok(html.includes('summary-json'));
-    assert.ok(html.includes('"total": 1'));
+    // JSON is HTML-escaped, so quotes become &quot;
+    assert.ok(html.includes('&quot;total&quot;: 1'));
   });
 });
