@@ -75,3 +75,36 @@ resource "azurerm_monitor_scheduled_query_rules_alert" "session_expiry" {
     threshold = 0
   }
 }
+
+resource "azurerm_monitor_scheduled_query_rules_alert" "job_failure" {
+  name                = "${var.project_name}-${var.environment}-job-failure"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+
+  action {
+    action_group = [azurerm_monitor_action_group.this.id]
+  }
+
+  data_source_id = azurerm_log_analytics_workspace.this.id
+  description    = "Alert when the clipper job fails at the system level"
+  enabled        = true
+
+  query = <<-KQL
+    let jobName = "${var.project_name}-${var.environment}-job";
+    ContainerAppSystemLogs_CL
+    | where JobName_s == jobName or Log_s has jobName
+    | where Reason_s in ("BackoffLimitExceeded", "Error")
+      or Log_s has "failed container"
+      or Log_s matches regex @"exit code: [1-9]\d*"
+      or Log_s has "exited with status Failed"
+  KQL
+
+  severity    = 1
+  frequency   = 5
+  time_window = 5
+
+  trigger {
+    operator  = "GreaterThan"
+    threshold = 0
+  }
+}

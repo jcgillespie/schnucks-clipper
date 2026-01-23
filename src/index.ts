@@ -1,8 +1,9 @@
 import { logger } from './logger.js';
 import { loadSessionData, isSessionValid } from './session.js';
 import { clipAllCoupons } from './clipper.js';
+import { runWeeklySummary } from './weekly-summary.js';
 
-async function main() {
+async function runClipper() {
   logger.info('Schnucks Coupon Clipper starting...');
 
   // 1. Load session data directly from file
@@ -32,6 +33,17 @@ async function main() {
       stack: error instanceof Error ? error.stack : undefined,
     });
     process.exit(1);
+  }
+}
+
+async function main() {
+  // Check if we should run weekly summary instead of clipper
+  const jobType = process.env.JOB_TYPE || 'clipper';
+
+  if (jobType === 'weekly-summary') {
+    await runWeeklySummary();
+  } else {
+    await runClipper();
   }
 }
 

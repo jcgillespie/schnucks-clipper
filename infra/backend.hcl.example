@@ -1,0 +1,4 @@
+resource_group_name  = "schnucks-clipper-state-rg"
+storage_account_name = "schnucksstate00000000"
+container_name       = "tfstate"
+key                  = "terraform.tfstate"

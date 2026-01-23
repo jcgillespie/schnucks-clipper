@@ -12,7 +12,7 @@ Build a lightweight Node.js/Playwright application to automatically clip all ava
 
 | Aspect                   | Value                                               |
 | ------------------------ | --------------------------------------------------- |
-| **Language/Version**     | Node.js 20 LTS (Alpine) + TypeScript                |
+| **Language/Version**     | Node.js 24 LTS (Alpine 3.23) + TypeScript           |
 | **Primary Dependencies** | Playwright (Chromium), dotenv                       |
 | **Storage**              | Azure File Share mounted at `/home/playwright/data` |
 | **Testing**              | Node.js built-in test runner (`node --test`)        |
@@ -190,7 +190,7 @@ Multi-stage Alpine build:
 
 ```dockerfile
 # Stage 1: Build
-FROM node:20-alpine AS builder
+FROM node:24-alpine3.23 AS builder
 WORKDIR /app
 COPY package*.json tsconfig.json ./
 RUN npm ci
@@ -293,7 +293,7 @@ CI/CD pipelines (depends on Groups 2-4 for build/deploy targets).
 Triggered on pull requests:
 
 - Checkout code
-- Setup Node.js 20
+- Setup Node.js 24
 - Install dependencies
 - Run linting (`npm run lint`)
 - Run type checking (`npm run typecheck`)
