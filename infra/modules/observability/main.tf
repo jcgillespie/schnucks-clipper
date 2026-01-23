@@ -23,6 +23,8 @@ resource "azurerm_monitor_scheduled_query_rules_alert" "fatal_errors" {
   location            = var.location
   resource_group_name = var.resource_group_name
 
+  depends_on = [azurerm_log_analytics_workspace.this]
+
   action {
     action_group = [azurerm_monitor_action_group.this.id]
   }
@@ -52,6 +54,8 @@ resource "azurerm_monitor_scheduled_query_rules_alert" "session_expiry" {
   location            = var.location
   resource_group_name = var.resource_group_name
 
+  depends_on = [azurerm_log_analytics_workspace.this]
+
   action {
     action_group = [azurerm_monitor_action_group.this.id]
   }
@@ -80,6 +84,8 @@ resource "azurerm_monitor_scheduled_query_rules_alert" "job_failure" {
   name                = "${var.project_name}-${var.environment}-job-failure"
   location            = var.location
   resource_group_name = var.resource_group_name
+
+  depends_on = [azurerm_log_analytics_workspace.this]
 
   action {
     action_group = [azurerm_monitor_action_group.this.id]
