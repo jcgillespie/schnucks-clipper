@@ -5,7 +5,7 @@ locals {
 
 resource "azurerm_container_app_job" "weekly_summary" {
   count = local.weekly_summary_enabled ? 1 : 0
-  name                         = "${var.job_name}-weekly-summary"
+  name                         = "${var.job_name}-ws"
   location                     = var.location
   resource_group_name          = var.resource_group_name
   container_app_environment_id = azurerm_container_app_environment.this.id
