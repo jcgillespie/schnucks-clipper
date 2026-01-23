@@ -106,4 +106,8 @@ resource "azurerm_role_assignment" "weekly_summary_log_reader" {
   scope                = var.log_analytics_workspace_id
   role_definition_name = "Log Analytics Reader"
   principal_id         = azurerm_container_app_job.weekly_summary[0].identity[0].principal_id
+
+  # Explicit dependency to ensure the managed identity is fully propagated in Azure AD
+  # before attempting to create the role assignment
+  depends_on = [azurerm_container_app_job.weekly_summary]
 }
