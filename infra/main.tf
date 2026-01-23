@@ -29,8 +29,8 @@ module "container_job" {
   registry_username = var.registry_username
   registry_password = var.registry_password
 
-  log_analytics_workspace_id            = module.observability.log_analytics_workspace_id
-  log_analytics_workspace_customer_id   = module.observability.log_analytics_workspace_customer_id
+  log_analytics_workspace_id          = module.observability.log_analytics_workspace_id
+  log_analytics_workspace_customer_id = module.observability.log_analytics_workspace_customer_id
 
   # Weekly summary configuration (optional)
   smtp_host     = var.smtp_host
