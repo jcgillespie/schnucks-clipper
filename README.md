@@ -126,6 +126,27 @@ Save the output values:
 - `tenant` → `AZURE_TENANT_ID`
 - `subscription-id` → `AZURE_SUBSCRIPTION_ID`
 
+**Grant Additional Permissions (Required for Weekly Summary Feature):**
+
+The service principal needs "User Access Administrator" role to create role assignments for the weekly summary job's managed identity. Grant this role at the subscription or resource group level:
+
+```bash
+# At subscription level (recommended for automation)
+az role assignment create \
+  --assignee <AZURE_CLIENT_ID> \
+  --role "User Access Administrator" \
+  --scope /subscriptions/{subscription-id}
+
+# OR at resource group level (more restrictive)
+az role assignment create \
+  --assignee <AZURE_CLIENT_ID> \
+  --role "User Access Administrator" \
+  --scope /subscriptions/{subscription-id}/resourceGroups/{resource-group-name}
+```
+
+> [!IMPORTANT]
+> Without the "User Access Administrator" role, the weekly summary job will be created but the role assignment for Log Analytics access will fail. You'll need to manually assign the "Log Analytics Reader" role to the job's managed identity if you skip this step.
+
 ### 4. Infrastructure Provisioning
 
 **Required Variables:**
@@ -220,6 +241,17 @@ If you want to use GitHub Actions for automated builds and deployments, configur
 - `TFSTATE_KEY`: State file key (e.g., `terraform.tfstate`)
 - `GHCR_PAT`: GitHub Personal Access Token with `write:packages` scope (for pushing images)
 - `ACTION_GROUP_EMAIL`: Email address for alert notifications
+
+**Optional GitHub Secrets (for Weekly Summary Feature):**
+
+- `SMTP_HOST`: SMTP server hostname (e.g., `smtp.mailgun.org`)
+- `SMTP_USER`: SMTP username (e.g., your Mailgun email address)
+- `SMTP_PASSWORD`: SMTP password/API key (sensitive)
+- `WEEKLY_SUMMARY_EMAIL_FROM`: Email address to send weekly summary from
+- `WEEKLY_SUMMARY_EMAIL_TO`: Email address to send weekly summary to (defaults to `ACTION_GROUP_EMAIL` if not set)
+
+> [!IMPORTANT]
+> **Service Principal Permissions**: The service principal (`AZURE_CLIENT_ID`) must have the "User Access Administrator" role at the subscription or resource group level to enable the weekly summary feature. This is required for Terraform to create role assignments for the weekly summary job's managed identity. See the [Service Principal Setup](#3-azure-authentication-setup) section for instructions on granting this role.
 
 The workflows will automatically:
 

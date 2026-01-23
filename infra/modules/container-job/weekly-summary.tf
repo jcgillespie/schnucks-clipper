@@ -4,7 +4,7 @@ locals {
 }
 
 resource "azurerm_container_app_job" "weekly_summary" {
-  count = local.weekly_summary_enabled ? 1 : 0
+  count                        = local.weekly_summary_enabled ? 1 : 0
   name                         = "${var.job_name}-ws"
   location                     = var.location
   resource_group_name          = var.resource_group_name
@@ -87,6 +87,20 @@ resource "azurerm_container_app_job" "weekly_summary" {
 }
 
 # Grant Log Analytics Reader role to managed identity
+# 
+# IMPORTANT: This requires the service principal (used by GitHub Actions) to have 
+# "User Access Administrator" or "Owner" role at the subscription or resource group level.
+#
+# If this fails with a 403 AuthorizationFailed error, you have two options:
+# 1. Grant the service principal "User Access Administrator" role (recommended for automation)
+# 2. Manually assign the role after deployment:
+#    az role assignment create \
+#      --assignee $(az containerapp job identity show \
+#        --name schnucks-clipper-prod-job-ws \
+#        --resource-group schnucks-clipper-prod-rg \
+#        --query principalId -o tsv) \
+#      --role "Log Analytics Reader" \
+#      --scope <workspace_id>
 resource "azurerm_role_assignment" "weekly_summary_log_reader" {
   count                = local.weekly_summary_enabled ? 1 : 0
   scope                = var.log_analytics_workspace_id
