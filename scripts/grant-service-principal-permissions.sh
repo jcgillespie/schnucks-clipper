@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Script to grant "User Access Administrator" role to the service principal
 # This is required for the weekly summary feature to create role assignments
 #
@@ -8,7 +8,9 @@
 # Usage:
 #   export AZURE_CLIENT_ID="<your-service-principal-app-id>"
 #   export AZURE_SUBSCRIPTION_ID="<your-subscription-id>"
-#   ./scripts/grant-service-principal-permissions.sh [resource-group-name]
+#   bash ./scripts/grant-service-principal-permissions.sh [resource-group-name]
+#   OR
+#   ./scripts/grant-service-principal-permissions.sh [resource-group-name]  (if executable)
 
 set -e
 
