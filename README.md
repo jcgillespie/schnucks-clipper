@@ -83,7 +83,7 @@ For forked-repo deployments via GitHub Actions, see `docs/github-actions-setup.m
 - `TFSTATE_STORAGE_ACCOUNT`: Storage account name for Terraform state
 - `TFSTATE_CONTAINER`: Container name for Terraform state (e.g., `tfstate`)
 - `TFSTATE_KEY`: State file key (e.g., `terraform.tfstate`)
-- `GHCR_PAT`: GitHub Personal Access Token with `read:packages` scope (for registry pulls)
+- `GHCR_PAT`: GitHub Personal Access Token with at least `read:packages` scope (used by Azure for registry pulls). If you use this PAT to push images instead of the built-in `GITHUB_TOKEN`, also grant `write:packages`. See the deployment guides for details.
 - `ACTION_GROUP_EMAIL`: Email address for alert notifications
 
 **Optional GitHub Secrets (for Weekly Summary Feature):**
@@ -95,7 +95,7 @@ For forked-repo deployments via GitHub Actions, see `docs/github-actions-setup.m
 - `WEEKLY_SUMMARY_EMAIL_TO`: Email address to send weekly summary to (defaults to `ACTION_GROUP_EMAIL` if not set)
 
 > [!IMPORTANT]
-> **Service Principal Permissions**: The service principal (`AZURE_CLIENT_ID`) must have the "User Access Administrator" role at the subscription or resource group level to enable the weekly summary feature. This is required for Terraform to create role assignments for the weekly summary job's managed identity. See `docs/self-managed-setup.md` for the role assignment command.
+> **Service Principal Permissions**: The service principal (`AZURE_CLIENT_ID`) must have the "User Access Administrator" role at the subscription or resource group level to enable the weekly summary feature. This is required for Terraform to create role assignments for the weekly summary job's managed identity. See `docs/self-managed-setup.md` and `docs/github-actions-setup.md` for the role assignment command.
 
 The workflows will automatically:
 
