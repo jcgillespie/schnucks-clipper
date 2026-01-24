@@ -18,8 +18,8 @@ resource "azurerm_monitor_action_group" "this" {
   }
 }
 
-resource "azurerm_monitor_scheduled_query_rules_alert" "fatal_errors" {
-  name                = "${var.project_name}-${var.environment}-fatal-errors"
+resource "azurerm_monitor_scheduled_query_rules_alert" "app_health" {
+  name                = "${var.project_name}-${var.environment}-app-health"
   location            = var.location
   resource_group_name = var.resource_group_name
 
@@ -30,44 +30,16 @@ resource "azurerm_monitor_scheduled_query_rules_alert" "fatal_errors" {
   }
 
   data_source_id = azurerm_log_analytics_workspace.this.id
-  description    = "Alert when the clipper job encountered a fatal error"
+  description    = "Alert when the clipper job encountered a fatal error or session issue"
   enabled        = true
 
   query = <<-KQL
     ContainerAppConsoleLogs_CL
     | where ContainerJobName_s == "${var.project_name}-${var.environment}-job"
-    | where Log_s contains "ERROR" or Log_s contains "Exception"
-  KQL
-
-  severity    = 1
-  frequency   = 5
-  time_window = 5
-
-  trigger {
-    operator  = "GreaterThan"
-    threshold = 0
-  }
-}
-
-resource "azurerm_monitor_scheduled_query_rules_alert" "session_expiry" {
-  name                = "${var.project_name}-${var.environment}-session-expiry"
-  location            = var.location
-  resource_group_name = var.resource_group_name
-
-  depends_on = [azurerm_log_analytics_workspace.this]
-
-  action {
-    action_group = [azurerm_monitor_action_group.this.id]
-  }
-
-  data_source_id = azurerm_log_analytics_workspace.this.id
-  description    = "Alert when the clipper session requires manual re-authentication"
-  enabled        = true
-
-  query = <<-KQL
-    ContainerAppConsoleLogs_CL
-    | where ContainerJobName_s == "${var.project_name}-${var.environment}-job"
-    | where Log_s contains "MISSING_CLIENT_ID" or Log_s contains "RE-AUTHENTICATE"
+    | where Log_s contains "ERROR"
+      or Log_s contains "Exception"
+      or Log_s contains "MISSING_CLIENT_ID"
+      or Log_s contains "RE-AUTHENTICATE"
   KQL
 
   severity    = 1
@@ -92,7 +64,7 @@ resource "azurerm_monitor_scheduled_query_rules_alert" "job_failure" {
   }
 
   data_source_id = azurerm_log_analytics_workspace.this.id
-  description    = "Alert when the clipper job fails at the system level"
+  description    = "Alert when the clipper job fails at the system level (after retries)"
   enabled        = true
 
   query = <<-KQL
@@ -111,6 +83,6 @@ resource "azurerm_monitor_scheduled_query_rules_alert" "job_failure" {
 
   trigger {
     operator  = "GreaterThan"
-    threshold = 0
+    threshold = 1
   }
 }
