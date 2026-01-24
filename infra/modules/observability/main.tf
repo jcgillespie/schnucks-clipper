@@ -36,9 +36,9 @@ resource "azurerm_monitor_scheduled_query_rules_alert" "app_health" {
   query = <<-KQL
     ContainerAppConsoleLogs_CL
     | where ContainerJobName_s == "${var.project_name}-${var.environment}-job"
-    | where Log_s contains "ERROR" 
+    | where Log_s contains "ERROR"
       or Log_s contains "Exception"
-      or Log_s contains "MISSING_CLIENT_ID" 
+      or Log_s contains "MISSING_CLIENT_ID"
       or Log_s contains "RE-AUTHENTICATE"
   KQL
 
