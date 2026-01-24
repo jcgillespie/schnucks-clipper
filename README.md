@@ -73,9 +73,8 @@ The infrastructure automatically sets up:
 
 - **Log Analytics Workspace**: Centralized log collection with 30-day retention.
 - **Alert Rules**:
-  - **Fatal Errors**: Triggers if the clipper encounters an exception.
-  - **Session Expiry**: Triggers if the clipper logs `MISSING_CLIENT_ID`, requiring a session refresh.
-  - **Job Failure**: Triggers when the container job fails at the system level (exit codes, backoff limits, etc.).
+  - **App Health**: A consolidated alert that triggers if the clipper encounters an exception, fatal error, or requires a session refresh (`MISSING_CLIENT_ID`).
+  - **Job Failure**: Triggers only when the container job fails at the system level after exhausting its retry limit.
 - **Action Group**: Sends email notifications to the configured admin address.
 - **Weekly Job Summary**: A separate container job that runs every Sunday to send a weekly email summary of all job executions in the past 7 days with their final status and coupon counts.
 
