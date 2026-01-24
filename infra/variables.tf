@@ -24,7 +24,7 @@ variable "image_name" {
 variable "cron_schedule" {
   description = "CRON schedule for the job"
   type        = string
-  default     = "0 10 * * *" # 10 AM Daily
+  default     = "0 16 * * *" # 4PM UTC Daily
 }
 
 variable "registry_server" {
