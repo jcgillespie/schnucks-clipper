@@ -74,25 +74,25 @@ async function queryLogAnalytics(
   query: string,
   lookbackDays: number,
 ): Promise<ExecutionResult[]> {
-  logger.info('Authenticating to Azure...');
+  logger.debug('Authenticating to Azure...');
   const credential = new DefaultAzureCredential();
 
-  logger.info('Creating LogsQueryClient...');
+  logger.debug('Creating LogsQueryClient...');
   const client = new LogsQueryClient(credential);
 
-  logger.info('Executing KQL query...', { workspaceId, lookbackDays });
+  logger.debug('Executing KQL query...', { workspaceId, lookbackDays });
   const result = await client.queryWorkspace(workspaceId, query, {
     duration: `P${lookbackDays}D`,
   });
 
   if (result.status === LogsQueryResultStatus.Success) {
-    logger.info('Query executed successfully', {
+    logger.debug('Query executed successfully', {
       tables: result.tables.length,
       rows: result.tables.reduce((sum, table) => sum + table.rows.length, 0),
     });
 
     if (result.tables.length === 0 || result.tables[0].rows.length === 0) {
-      logger.info('No execution results found in the past 7 days');
+      logger.debug('No execution results found in the past 7 days');
       return [];
     }
 
@@ -444,7 +444,7 @@ async function sendEmail(
   textBody: string,
   lookbackDays: number,
 ): Promise<void> {
-  logger.info('Configuring SMTP transporter...', { host: config.smtpHost, port: config.smtpPort });
+  logger.debug('Configuring SMTP transporter...', { host: config.smtpHost, port: config.smtpPort });
 
   const transporter = nodemailer.createTransport({
     host: config.smtpHost,
@@ -461,7 +461,7 @@ async function sendEmail(
   const dateRange = `${startDate.toLocaleDateString()} - ${now.toLocaleDateString()}`;
   const reportType = config.schedule === 'daily' ? 'Daily Health Digest' : 'Weekly Summary';
 
-  logger.info('Sending email...', { from: config.emailFrom, to: config.emailTo });
+  logger.debug('Sending email...', { from: config.emailFrom, to: config.emailTo });
 
   const info = await transporter.sendMail({
     from: config.emailFrom,
@@ -471,11 +471,11 @@ async function sendEmail(
     text: textBody,
   });
 
-  logger.info('Email sent successfully', { messageId: info.messageId });
+  logger.debug('Email sent successfully', { messageId: info.messageId });
 }
 
 export async function runWeeklySummary() {
-  logger.info('Health Digest Job starting...');
+  logger.debug('Health Digest Job starting...');
 
   // Lazy-load config only when actually running the weekly summary job
   // This prevents validation errors when the module is imported but not used
@@ -483,7 +483,7 @@ export async function runWeeklySummary() {
 
   try {
     // 1. Query Log Analytics
-    logger.info('Querying Log Analytics workspace...', {
+    logger.debug('Querying Log Analytics workspace...', {
       workspaceId: config.logAnalyticsWorkspaceId,
       lookbackDays: config.lookbackDays,
       schedule: config.schedule,
@@ -495,10 +495,10 @@ export async function runWeeklySummary() {
       config.lookbackDays,
     );
 
-    logger.info('Query completed', { executionCount: executions.length });
+    logger.debug('Query completed', { executionCount: executions.length });
 
     // 2. Format email
-    logger.info('Formatting email summary...');
+    logger.debug('Formatting email summary...');
     const { html, text } = formatEmailSummary(executions, config.lookbackDays, config);
 
     // 3. Determine if we should send email
@@ -507,12 +507,12 @@ export async function runWeeklySummary() {
 
     if (shouldSend) {
       await sendEmail(config, html, text, config.lookbackDays);
-      logger.info('Health digest job completed successfully', {
+      logger.debug('Health digest job completed successfully', {
         emailSent: true,
         healthStatus: healthStatus.status,
       });
     } else {
-      logger.info('Health digest job completed successfully', {
+      logger.debug('Health digest job completed successfully', {
         emailSent: false,
         reason: 'No issues detected and sendOnSuccess=false',
         healthStatus: healthStatus.status,

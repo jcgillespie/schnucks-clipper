@@ -9,7 +9,7 @@ export async function loadSessionData(): Promise<SessionData> {
 
   try {
     const data = await fs.readFile(sessionPath, 'utf-8');
-    logger.info('Loading existing session data', { path: sessionPath });
+    logger.debug('Loading existing session data', { path: sessionPath });
     return JSON.parse(data) as SessionData;
   } catch (error) {
     logger.warn('No existing session data found or validation failed.', {
@@ -30,7 +30,7 @@ export async function saveSessionData(sessionData: SessionData): Promise<void> {
   try {
     await fs.mkdir(dataDir, { recursive: true });
     await fs.writeFile(sessionPath, JSON.stringify(sessionData, null, 2), 'utf-8');
-    logger.info('Session data saved successfully', { path: sessionPath });
+    logger.debug('Session data saved successfully', { path: sessionPath });
   } catch (error) {
     logger.error('Failed to save session data', {
       path: sessionPath,

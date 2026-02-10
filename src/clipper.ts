@@ -9,7 +9,7 @@ export interface ClippingSummary {
 }
 
 export async function clipAllCoupons(sessionData: SessionData): Promise<ClippingSummary> {
-  logger.info('Starting coupon clipping process...');
+  logger.debug('Starting coupon clipping process...');
 
   const coupons = await withRetry(() => getCoupons(sessionData));
   const summary: ClippingSummary = {
@@ -19,7 +19,7 @@ export async function clipAllCoupons(sessionData: SessionData): Promise<Clipping
     skipped: 0,
   };
 
-  logger.info(`Found ${coupons.length} available coupons.`);
+  logger.debug(`Found ${coupons.length} available coupons.`);
 
   for (const coupon of coupons) {
     try {

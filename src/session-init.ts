@@ -6,8 +6,8 @@ import { SessionData } from './api.js';
 import { config } from './config.js';
 
 async function initializeSession() {
-  logger.info('Starting manual session initialization...');
-  logger.info('This will launch a headful browser. Please log in and complete TFA.');
+  logger.debug('Starting manual session initialization...');
+  logger.debug('This will launch a headful browser. Please log in and complete TFA.');
 
   const browser = await chromium.launch({ headless: false });
   const context = await browser.newContext();
@@ -15,8 +15,8 @@ async function initializeSession() {
 
   await page.goto(config.schnucksBaseUrl);
 
-  logger.info('Waiting for you to log in...');
-  logger.info('>>> PRESS ENTER IN THIS TERMINAL ONCE YOU HAVE COMPLETED LOGIN AND TFA <<<');
+  logger.debug('Waiting for you to log in...');
+  logger.debug('>>> PRESS ENTER IN THIS TERMINAL ONCE YOU HAVE COMPLETED LOGIN AND TFA <<<');
 
   // Wait for user to press enter in the terminal
   await new Promise((resolve) => {
@@ -52,7 +52,7 @@ async function initializeSession() {
     };
 
     await saveSessionData(sessionData);
-    logger.info('Session initialization complete! You can now run the clipper.');
+    logger.debug('Session initialization complete! You can now run the clipper.');
   } catch (error) {
     logger.error('Failed to save session context during initialization.', {
       error: error instanceof Error ? error.message : String(error),
