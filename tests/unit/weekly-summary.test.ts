@@ -1,10 +1,25 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert';
 import { formatEmailSummary, type ExecutionResult } from '../../src/weekly-summary.js';
+import { type WeeklySummaryConfig } from '../../src/weekly-summary-config.js';
 
 describe('Weekly Summary Email Formatting', () => {
+  // Mock config for tests
+  const mockConfig: WeeklySummaryConfig = {
+    logAnalyticsWorkspaceId: 'test-workspace',
+    smtpHost: 'smtp.example.com',
+    smtpPort: 587,
+    smtpUser: 'user',
+    smtpPass: 'pass',
+    emailFrom: 'sender@example.com',
+    emailTo: 'recipient@example.com',
+    schedule: 'daily',
+    lookbackDays: 1,
+    sendOnSuccess: true,
+  };
+
   test('should format empty execution list', () => {
-    const { html, text } = formatEmailSummary([]);
+    const { html, text } = formatEmailSummary([], 1, mockConfig);
 
     assert.ok(html.includes('No job executions found'));
     assert.ok(text.includes('No job executions found'));
@@ -27,7 +42,7 @@ describe('Weekly Summary Email Formatting', () => {
       },
     ];
 
-    const { html, text } = formatEmailSummary(executions);
+    const { html, text } = formatEmailSummary(executions, 1, mockConfig);
 
     assert.ok(html.includes('Succeeded'));
     assert.ok(html.includes('test-job-123'));
@@ -48,7 +63,7 @@ describe('Weekly Summary Email Formatting', () => {
       },
     ];
 
-    const { html, text } = formatEmailSummary(executions);
+    const { html, text } = formatEmailSummary(executions, 1, mockConfig);
 
     assert.ok(html.includes('Failed'));
     assert.ok(html.includes('test-job-456'));
@@ -82,7 +97,7 @@ describe('Weekly Summary Email Formatting', () => {
       },
     ];
 
-    const { html, text } = formatEmailSummary(executions);
+    const { html, text } = formatEmailSummary(executions, 1, mockConfig);
 
     assert.ok(html.includes('Total Executions:</span> 3'));
     assert.ok(html.includes('Succeeded:</span> <span class="status-badge status-succeeded">2'));
@@ -102,7 +117,7 @@ describe('Weekly Summary Email Formatting', () => {
       },
     ];
 
-    const { html } = formatEmailSummary(executions);
+    const { html } = formatEmailSummary(executions, 1, mockConfig);
 
     assert.ok(html.includes('&lt;script&gt;'));
     assert.ok(!html.includes('<script>'));
@@ -123,7 +138,7 @@ describe('Weekly Summary Email Formatting', () => {
       },
     ];
 
-    const { html } = formatEmailSummary(executions);
+    const { html } = formatEmailSummary(executions, 1, mockConfig);
 
     // Verify that HTML in jobExecution is escaped
     assert.ok(html.includes('&lt;script&gt;'));

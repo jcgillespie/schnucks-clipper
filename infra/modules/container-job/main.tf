@@ -58,6 +58,10 @@ resource "azurerm_container_app_job" "this" {
         name  = "SESSION_FILE"
         value = "/data/session.json"
       }
+      env {
+        name  = "LOG_LEVEL"
+        value = "warn" # Reduce log verbosity to minimize Azure Monitor costs
+      }
     }
 
     volume {

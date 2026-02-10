@@ -18,12 +18,8 @@ variable "environment" {
   type        = string
 }
 
-variable "action_group_email" {
-  description = "Email address for alert notifications"
-  type        = string
-}
-
 variable "log_retention_days" {
-  description = "Retention period for Log Analytics logs (days)"
+  description = "Retention period for Log Analytics logs (days). First 31 days are free."
   type        = number
+  default     = 30
 }

@@ -34,7 +34,7 @@ resource "azurerm_container_app_job" "weekly_summary" {
   }
 
   schedule_trigger_config {
-    cron_expression = "0 0 * * 0" # Sunday at midnight UTC
+    cron_expression = "0 14 * * 6" # Saturday at 2 PM UTC (8 AM Central Time)
   }
 
   template {
@@ -48,6 +48,21 @@ resource "azurerm_container_app_job" "weekly_summary" {
       env {
         name  = "JOB_TYPE"
         value = "weekly-summary"
+      }
+
+      env {
+        name  = "HEALTH_DIGEST_SCHEDULE"
+        value = "weekly" # Run as weekly health digest
+      }
+
+      env {
+        name  = "HEALTH_DIGEST_SEND_ON_SUCCESS"
+        value = "true" # Always send email, even on success
+      }
+
+      env {
+        name  = "LOG_LEVEL"
+        value = "warn" # Reduce log verbosity in production
       }
 
       env {

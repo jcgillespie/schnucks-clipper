@@ -26,12 +26,11 @@ export async function clipAllCoupons(sessionData: SessionData): Promise<Clipping
       const success = await clipCoupon(sessionData, coupon.id);
       if (success) {
         summary.clipped++;
-        logger.info(`Successfully clipped coupon: ${coupon.id} `, {
-          description: coupon.description,
-        });
+        // Removed per-coupon success logging to reduce log volume
+        // Success details are logged in the summary below
       } else {
         summary.failed++;
-        logger.warn(`Failed to clip coupon: ${coupon.id} `, { description: coupon.description });
+        logger.warn(`Failed to clip coupon: ${coupon.id}`, { description: coupon.description });
       }
     } catch (error) {
       summary.failed++;

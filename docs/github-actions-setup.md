@@ -71,9 +71,8 @@ Required secrets:
 - `TFSTATE_CONTAINER`
 - `TFSTATE_KEY`
 - `GHCR_PAT`
-- `ACTION_GROUP_EMAIL`
 
-Optional secrets (weekly summary email):
+Optional secrets (daily health digest email - recommended for monitoring):
 
 - `SMTP_HOST`
 - `SMTP_USER`
