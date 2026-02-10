@@ -177,6 +177,50 @@ function calculateHealthStatus(executions: ExecutionResult[]): HealthStatus {
   };
 }
 
+interface PeriodSummary {
+  totalRuns: number;
+  successfulRuns: number;
+  failedRuns: number;
+  totalCouponsClipped: number;
+  totalCouponsFailed: number;
+  totalCouponsSkipped: number;
+  failureDetails: string[];
+}
+
+function aggregateExecutions(executions: ExecutionResult[]): PeriodSummary {
+  let totalCouponsClipped = 0;
+  let totalCouponsFailed = 0;
+  let totalCouponsSkipped = 0;
+  const failureDetails: string[] = [];
+
+  for (const exec of executions) {
+    if (exec.Status === 'Succeeded' && exec.Summary) {
+      totalCouponsClipped += exec.Summary.clipped || 0;
+      totalCouponsFailed += exec.Summary.failed || 0;
+      totalCouponsSkipped += exec.Summary.skipped || 0;
+    } else if (exec.Status === 'Failed' && exec.ErrorReasons) {
+      // Track failures with timestamps
+      const executionTime = new Date(exec.ExecutionTime).toLocaleDateString();
+      for (const error of exec.ErrorReasons) {
+        failureDetails.push(`${executionTime}: ${error}`);
+      }
+    }
+  }
+
+  const successfulRuns = executions.filter((e) => e.Status === 'Succeeded').length;
+  const failedRuns = executions.filter((e) => e.Status === 'Failed').length;
+
+  return {
+    totalRuns: executions.length,
+    successfulRuns,
+    failedRuns,
+    totalCouponsClipped,
+    totalCouponsFailed,
+    totalCouponsSkipped,
+    failureDetails,
+  };
+}
+
 export function formatEmailSummary(
   executions: ExecutionResult[],
   lookbackDays: number,
@@ -188,9 +232,7 @@ export function formatEmailSummary(
   const reportType = config.schedule === 'daily' ? 'Daily Health Digest' : 'Weekly Summary';
 
   const healthStatus = calculateHealthStatus(executions);
-  const total = executions.length;
-  const succeeded = executions.filter((e) => e.Status === 'Succeeded').length;
-  const failed = executions.filter((e) => e.Status === 'Failed').length;
+  const summary = aggregateExecutions(executions);
 
   // Determine status badge
   let statusBadge = '';
@@ -217,25 +259,21 @@ export function formatEmailSummary(
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
     h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
+    h2 { color: #34495e; font-size: 1.1em; margin-top: 20px; margin-bottom: 10px; }
     .health-status { background: #f8f9fa; border-left: 4px solid #3498db; padding: 20px; margin: 20px 0; font-size: 1.2em; text-align: center; }
     .summary { background: #f8f9fa; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; }
-    .summary-item { margin: 5px 0; }
-    .summary-label { font-weight: bold; }
+    .summary-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 10px 0; }
+    .summary-item { padding: 10px; background: white; border-radius: 4px; }
+    .summary-label { font-weight: bold; color: #34495e; font-size: 0.9em; text-transform: uppercase; }
+    .summary-value { font-size: 1.8em; color: #2c3e50; margin-top: 5px; font-weight: bold; }
     .alert-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }
     .alert-box.error { background: #f8d7da; border-left-color: #dc3545; }
-    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-    th { background: #34495e; color: white; padding: 12px; text-align: left; }
-    td { padding: 10px; border-bottom: 1px solid #ddd; }
-    tr:hover { background: #f5f5f5; }
+    .error-list { margin: 10px 0; padding-left: 20px; }
+    .error-list li { margin: 5px 0; color: #e74c3c; font-size: 0.9em; }
     .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold; }
     .status-healthy { background: #27ae60; color: white; }
     .status-warning { background: #f39c12; color: white; }
     .status-error { background: #e74c3c; color: white; }
-    .status-succeeded { background: #27ae60; color: white; }
-    .status-failed { background: #e74c3c; color: white; }
-    .status-unknown { background: #95a5a6; color: white; }
-    .error-reasons { color: #e74c3c; font-size: 0.9em; margin-top: 5px; }
-    .summary-json { background: #f8f9fa; padding: 8px; border-radius: 4px; font-family: monospace; font-size: 0.85em; margin-top: 5px; }
     .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #7f8c8d; font-size: 0.9em; }
   </style>
 </head>
@@ -269,61 +307,69 @@ export function formatEmailSummary(
 `;
   }
 
-  html += `
+  if (executions.length === 0) {
+    html += '<p><em>No job executions found in the reporting period.</em></p>';
+  } else {
+    html += `
+  <h2>Period Summary</h2>
   <div class="summary">
-    <div class="summary-item"><span class="summary-label">Total Executions:</span> ${total}</div>
-    <div class="summary-item"><span class="summary-label">Succeeded:</span> <span class="status-badge status-succeeded">${succeeded}</span></div>
-    <div class="summary-item"><span class="summary-label">Failed:</span> <span class="status-badge status-failed">${failed}</span></div>
+    <div class="summary-row">
+      <div class="summary-item">
+        <div class="summary-label">Total Job Runs</div>
+        <div class="summary-value">${summary.totalRuns}</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">Successful Runs</div>
+        <div class="summary-value" style="color: #27ae60;">${summary.successfulRuns}</div>
+      </div>
+    </div>
+    ${summary.failedRuns > 0 ? `
+    <div class="summary-row">
+      <div class="summary-item">
+        <div class="summary-label">Failed Runs</div>
+        <div class="summary-value" style="color: #e74c3c;">${summary.failedRuns}</div>
+      </div>
+    </div>
+    ` : ''}
+  </div>
+
+  <h2>Coupons Clipped</h2>
+  <div class="summary">
+    <div class="summary-row">
+      <div class="summary-item">
+        <div class="summary-label">Total Clipped</div>
+        <div class="summary-value" style="color: #27ae60;">${summary.totalCouponsClipped}</div>
+      </div>
+      <div class="summary-item">
+        <div class="summary-label">Failed to Clip</div>
+        <div class="summary-value" style="color: #e74c3c;">${summary.totalCouponsFailed}</div>
+      </div>
+    </div>
+    ${summary.totalCouponsSkipped > 0 ? `
+    <div class="summary-row">
+      <div class="summary-item">
+        <div class="summary-label">Skipped</div>
+        <div class="summary-value">${summary.totalCouponsSkipped}</div>
+      </div>
+    </div>
+    ` : ''}
   </div>
 `;
 
-  if (executions.length === 0) {
-    html += '<p><em>No job executions found in the past 7 days.</em></p>';
-  } else {
-    html += `
-  <table>
-    <thead>
-      <tr>
-        <th>Execution</th>
-        <th>Status</th>
-        <th>Time</th>
-        <th>Details</th>
-      </tr>
-    </thead>
-    <tbody>
-`;
-
-    for (const exec of executions) {
-      // Sanitize status for CSS class name (only allow alphanumeric, hyphens, underscores)
-      const statusClass = `status-${exec.Status.toLowerCase().replace(/[^a-z0-9_-]/g, '')}`;
-      const executionTime = new Date(exec.ExecutionTime).toLocaleString();
-
+    // Add failure details if there are any
+    if (summary.failureDetails.length > 0) {
       html += `
-      <tr>
-        <td><code>${escapeHtml(exec.jobExecution)}</code></td>
-        <td><span class="status-badge ${statusClass}">${escapeHtml(exec.Status)}</span></td>
-        <td>${escapeHtml(executionTime)}</td>
-        <td>`;
-
-      if (exec.Status === 'Failed' && exec.ErrorReasons && exec.ErrorReasons.length > 0) {
-        html += `<div class="error-reasons"><strong>Errors:</strong><ul>`;
-        for (const error of exec.ErrorReasons) {
-          html += `<li>${escapeHtml(error)}</li>`;
-        }
-        html += `</ul></div>`;
-      } else if (exec.Status === 'Succeeded' && exec.Summary) {
-        html += `<div class="summary-json">${escapeHtml(JSON.stringify(exec.Summary, null, 2))}</div>`;
+  <h2>Issues Detected</h2>
+  <div class="alert-box error">
+    <ul class="error-list">
+`;
+      for (const detail of summary.failureDetails) {
+        html += `      <li>${escapeHtml(detail)}</li>\n`;
       }
-
-      html += `</td>
-      </tr>
+      html += `    </ul>
+  </div>
 `;
     }
-
-    html += `
-    </tbody>
-  </table>
-`;
   }
 
   html += `
@@ -350,33 +396,31 @@ export function formatEmailSummary(
     text += `\n`;
   }
 
-  text += `Summary:\n`;
-  text += `  Total Executions: ${total}\n`;
-  text += `  Succeeded: ${succeeded}\n`;
-  text += `  Failed: ${failed}\n\n`;
-
   if (executions.length === 0) {
-    text += `No job executions found in the past 7 days.\n`;
+    text += `No job executions found in the reporting period.\n`;
   } else {
-    text += `Detailed Results:\n`;
-    text += `${'='.repeat(80)}\n\n`;
+    text += `PERIOD SUMMARY\n`;
+    text += `${'-'.repeat(60)}\n`;
+    text += `Total Job Runs: ${summary.totalRuns}\n`;
+    text += `  Successful: ${summary.successfulRuns}\n`;
+    if (summary.failedRuns > 0) {
+      text += `  Failed: ${summary.failedRuns}\n`;
+    }
+    text += `\n`;
+    text += `COUPONS CLIPPED\n`;
+    text += `${'-'.repeat(60)}\n`;
+    text += `Total Clipped: ${summary.totalCouponsClipped}\n`;
+    text += `Failed to Clip: ${summary.totalCouponsFailed}\n`;
+    if (summary.totalCouponsSkipped > 0) {
+      text += `Skipped: ${summary.totalCouponsSkipped}\n`;
+    }
 
-    for (const exec of executions) {
-      const executionTime = new Date(exec.ExecutionTime).toLocaleString();
-      text += `Execution: ${exec.jobExecution}\n`;
-      text += `Status: ${exec.Status}\n`;
-      text += `Time: ${executionTime}\n`;
-
-      if (exec.Status === 'Failed' && exec.ErrorReasons && exec.ErrorReasons.length > 0) {
-        text += `Errors:\n`;
-        for (const error of exec.ErrorReasons) {
-          text += `  - ${error}\n`;
-        }
-      } else if (exec.Status === 'Succeeded' && exec.Summary) {
-        text += `Summary: ${JSON.stringify(exec.Summary)}\n`;
+    if (summary.failureDetails.length > 0) {
+      text += `\nISSUES DETECTED\n`;
+      text += `${'-'.repeat(60)}\n`;
+      for (const detail of summary.failureDetails) {
+        text += `• ${detail}\n`;
       }
-
-      text += `\n${'-'.repeat(80)}\n\n`;
     }
   }
 
