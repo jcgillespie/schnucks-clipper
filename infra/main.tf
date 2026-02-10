@@ -32,13 +32,13 @@ module "container_job" {
   log_analytics_workspace_id          = module.observability.log_analytics_workspace_id
   log_analytics_workspace_customer_id = module.observability.log_analytics_workspace_customer_id
 
-  # Weekly summary configuration (optional)
+  # Daily health digest configuration (optional)
   smtp_host     = var.smtp_host
   smtp_port     = var.smtp_port
   smtp_user     = var.smtp_user
   smtp_password = var.smtp_password
   email_from    = var.weekly_summary_email_from
-  email_to      = var.weekly_summary_email_to != "" ? var.weekly_summary_email_to : var.action_group_email
+  email_to      = var.weekly_summary_email_to
 }
 
 module "observability" {
@@ -49,6 +49,5 @@ module "observability" {
   project_name        = var.project_name
   environment         = var.environment
 
-  action_group_email = var.action_group_email
   log_retention_days = var.log_retention_days
 }

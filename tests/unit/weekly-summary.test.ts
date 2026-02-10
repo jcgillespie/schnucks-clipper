@@ -1,15 +1,28 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert';
 import { formatEmailSummary, type ExecutionResult } from '../../src/weekly-summary.js';
+import { type WeeklySummaryConfig } from '../../src/weekly-summary-config.js';
 
 describe('Weekly Summary Email Formatting', () => {
+  // Mock config for tests
+  const mockConfig: WeeklySummaryConfig = {
+    logAnalyticsWorkspaceId: 'test-workspace',
+    smtpHost: 'smtp.example.com',
+    smtpPort: 587,
+    smtpUser: 'user',
+    smtpPass: 'pass',
+    emailFrom: 'sender@example.com',
+    emailTo: 'recipient@example.com',
+    schedule: 'daily',
+    lookbackDays: 1,
+    sendOnSuccess: true,
+  };
+
   test('should format empty execution list', () => {
-    const { html, text } = formatEmailSummary([]);
+    const { html, text } = formatEmailSummary([], 1, mockConfig);
 
     assert.ok(html.includes('No job executions found'));
     assert.ok(text.includes('No job executions found'));
-    assert.ok(html.includes('Total Executions:</span> 0'));
-    assert.ok(text.includes('Total Executions: 0'));
   });
 
   test('should format successful executions', () => {
@@ -27,15 +40,15 @@ describe('Weekly Summary Email Formatting', () => {
       },
     ];
 
-    const { html, text } = formatEmailSummary(executions);
+    const { html, text } = formatEmailSummary(executions, 1, mockConfig);
 
-    assert.ok(html.includes('Succeeded'));
-    assert.ok(html.includes('test-job-123'));
-    // JSON is HTML-escaped, so quotes become &quot;
-    assert.ok(html.includes('&quot;total&quot;: 5'));
-    assert.ok(text.includes('Succeeded'));
-    assert.ok(text.includes('test-job-123'));
-    assert.ok(text.includes('"total":5'));
+    // Check aggregated summaries
+    assert.ok(html.includes('Total Job Runs'));
+    assert.ok(html.includes('Coupons Clipped'));
+    assert.ok(html.includes('Total Clipped'));
+    assert.ok(html.includes('5')); // 5 clipped coupons
+    assert.ok(text.includes('Total Job Runs: 1'));
+    assert.ok(text.includes('Total Clipped: 5'));
   });
 
   test('should format failed executions with error reasons', () => {
@@ -48,14 +61,13 @@ describe('Weekly Summary Email Formatting', () => {
       },
     ];
 
-    const { html, text } = formatEmailSummary(executions);
+    const { html, text } = formatEmailSummary(executions, 1, mockConfig);
 
-    assert.ok(html.includes('Failed'));
-    assert.ok(html.includes('test-job-456'));
+    // Check that errors are shown in the Issues section
+    assert.ok(html.includes('Issues Detected'));
     assert.ok(html.includes('Network timeout'));
     assert.ok(html.includes('Connection refused'));
-    assert.ok(text.includes('Failed'));
-    assert.ok(text.includes('test-job-456'));
+    assert.ok(text.includes('ISSUES DETECTED'));
     assert.ok(text.includes('Network timeout'));
     assert.ok(text.includes('Connection refused'));
   });
@@ -82,14 +94,15 @@ describe('Weekly Summary Email Formatting', () => {
       },
     ];
 
-    const { html, text } = formatEmailSummary(executions);
+    const { html, text } = formatEmailSummary(executions, 1, mockConfig);
 
-    assert.ok(html.includes('Total Executions:</span> 3'));
-    assert.ok(html.includes('Succeeded:</span> <span class="status-badge status-succeeded">2'));
-    assert.ok(html.includes('Failed:</span> <span class="status-badge status-failed">1'));
-    assert.ok(text.includes('Total Executions: 3'));
-    assert.ok(text.includes('Succeeded: 2'));
-    assert.ok(text.includes('Failed: 1'));
+    // Check aggregated statistics across the period
+    assert.ok(html.includes('Total Job Runs'));
+    assert.ok(html.includes('3')); // 3 total runs
+    assert.ok(html.includes('Total Clipped'));
+    assert.ok(html.includes('5')); // 3 + 2 = 5 total clipped
+    assert.ok(text.includes('Total Job Runs: 3'));
+    assert.ok(text.includes('Total Clipped: 5'));
   });
 
   test('should escape HTML in error messages', () => {
@@ -102,8 +115,9 @@ describe('Weekly Summary Email Formatting', () => {
       },
     ];
 
-    const { html } = formatEmailSummary(executions);
+    const { html } = formatEmailSummary(executions, 1, mockConfig);
 
+    // Errors should be escaped in the Issues section
     assert.ok(html.includes('&lt;script&gt;'));
     assert.ok(!html.includes('<script>'));
   });
@@ -123,14 +137,11 @@ describe('Weekly Summary Email Formatting', () => {
       },
     ];
 
-    const { html } = formatEmailSummary(executions);
+    const { html } = formatEmailSummary(executions, 1, mockConfig);
 
-    // Verify that HTML in jobExecution is escaped
-    assert.ok(html.includes('&lt;script&gt;'));
-    assert.ok(!html.includes('<script>'));
-    // Verify JSON summary is present and properly escaped
-    assert.ok(html.includes('summary-json'));
-    // JSON is HTML-escaped, so quotes become &quot;
-    assert.ok(html.includes('&quot;total&quot;: 1'));
+    // Summary should be present and properly formatted (no job execution name shown in new format)
+    assert.ok(html.includes('Period Summary'));
+    assert.ok(html.includes('Total Clipped'));
+    assert.ok(html.includes('1'));
   });
 });

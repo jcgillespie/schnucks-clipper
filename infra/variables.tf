@@ -44,11 +44,6 @@ variable "registry_password" {
   sensitive   = true
 }
 
-variable "action_group_email" {
-  description = "Email address for alert notifications"
-  type        = string
-}
-
 variable "log_retention_days" {
   description = "Retention period for Log Analytics logs (days)"
   type        = number
@@ -88,7 +83,7 @@ variable "weekly_summary_email_from" {
 }
 
 variable "weekly_summary_email_to" {
-  description = "Email address to send weekly summary to (defaults to action_group_email if not set)"
+  description = "Email address(es) to send daily health digest to (comma-separated for multiple recipients)"
   type        = string
   default     = ""
 }

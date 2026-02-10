@@ -11,6 +11,10 @@ export interface WeeklySummaryConfig {
   emailFrom: string;
   emailTo: string;
   jobName?: string;
+  // Health digest configuration
+  schedule: 'daily' | 'weekly';
+  lookbackDays: number;
+  sendOnSuccess: boolean;
 }
 
 function validateConfig(): WeeklySummaryConfig {
@@ -22,6 +26,11 @@ function validateConfig(): WeeklySummaryConfig {
   const emailFrom = process.env.EMAIL_FROM;
   const emailTo = process.env.EMAIL_TO;
   const jobName = process.env.JOB_NAME;
+
+  // Health digest configuration
+  const schedule = (process.env.HEALTH_DIGEST_SCHEDULE || 'weekly') as 'daily' | 'weekly';
+  const lookbackDays = schedule === 'daily' ? 1 : 7;
+  const sendOnSuccess = process.env.HEALTH_DIGEST_SEND_ON_SUCCESS === 'true';
 
   if (!logAnalyticsWorkspaceId) {
     throw new Error('MISSING_CONFIG: LOG_ANALYTICS_WORKSPACE_ID environment variable is required.');
@@ -57,6 +66,9 @@ function validateConfig(): WeeklySummaryConfig {
     logAnalyticsWorkspaceId,
     smtpHost,
     smtpPort,
+    schedule,
+    lookbackDays,
+    sendOnSuccess,
     smtpUser,
     smtpPass,
     emailFrom,

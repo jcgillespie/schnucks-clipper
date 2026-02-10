@@ -79,9 +79,8 @@ az role assignment create \
 - `image_name`: Full Docker image name and tag (e.g., `ghcr.io/your-username/schnucks-clipper:latest`)
 - `registry_username`: Registry username (for GHCR, your GitHub username)
 - `registry_password`: Registry password/token (for GHCR, a PAT with `read:packages`)
-- `action_group_email`: Email address for alert notifications
 
-**Optional variables (weekly summary email):**
+**Optional variables (daily health digest email - recommended for monitoring):**
 
 - `smtp_host`, `smtp_port`, `smtp_user`, `smtp_password`
 - `weekly_summary_email_from`, `weekly_summary_email_to`
@@ -92,8 +91,7 @@ tofu init -backend-config=backend.hcl
 tofu apply \
   -var="image_name=$IMAGE_NAME" \
   -var="registry_username=<your-username>" \
-  -var="registry_password=<registry-password>" \
-  -var="action_group_email=you@example.com"
+  -var="registry_password=<registry-password>"
 ```
 
 If you use a registry other than GHCR, set `registry_server` accordingly (default: `ghcr.io`).

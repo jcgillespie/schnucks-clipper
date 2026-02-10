@@ -73,8 +73,7 @@ jobs:
             tofu plan -no-color \
               -var "image_name=ghcr.io/${{ github.repository }}:${{ github.event.inputs.image_tag || 'latest' }}" \
               -var "registry_username=${{ github.actor }}" \
-              -var "registry_password=${{ secrets.GHCR_PAT }}" \
-              -var "action_group_email=${{ secrets.ACTION_GROUP_EMAIL }}"
+              -var "registry_password=${{ secrets.GHCR_PAT }}"
           else
             echo "Skipping plan: Backend secrets not available (this is expected for external PRs)"
           fi

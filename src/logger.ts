@@ -9,6 +9,10 @@ const LOG_LEVELS: Record<LogLevel, number> = {
 
 import { config } from './config.js';
 
+// Environment-based log level configuration
+// Production: Set LOG_LEVEL=warn to reduce log volume and costs
+// Development: Set LOG_LEVEL=info or LOG_LEVEL=debug for detailed logging
+// Default: info
 const currentLogLevel = (config.logLevel as LogLevel) || 'info';
 const currentPriority = LOG_LEVELS[currentLogLevel] ?? 1;
 
