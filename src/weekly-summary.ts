@@ -323,14 +323,18 @@ export function formatEmailSummary(
         <div class="summary-value" style="color: #27ae60;">${summary.successfulRuns}</div>
       </div>
     </div>
-    ${summary.failedRuns > 0 ? `
+    ${
+      summary.failedRuns > 0
+        ? `
     <div class="summary-row">
       <div class="summary-item">
         <div class="summary-label">Failed Runs</div>
         <div class="summary-value" style="color: #e74c3c;">${summary.failedRuns}</div>
       </div>
     </div>
-    ` : ''}
+    `
+        : ''
+    }
   </div>
 
   <h2>Coupons Clipped</h2>
@@ -345,14 +349,18 @@ export function formatEmailSummary(
         <div class="summary-value" style="color: #e74c3c;">${summary.totalCouponsFailed}</div>
       </div>
     </div>
-    ${summary.totalCouponsSkipped > 0 ? `
+    ${
+      summary.totalCouponsSkipped > 0
+        ? `
     <div class="summary-row">
       <div class="summary-item">
         <div class="summary-label">Skipped</div>
         <div class="summary-value">${summary.totalCouponsSkipped}</div>
       </div>
     </div>
-    ` : ''}
+    `
+        : ''
+    }
   </div>
 `;
 

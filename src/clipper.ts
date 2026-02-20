@@ -39,8 +39,8 @@ export async function clipAllCoupons(sessionData: SessionData): Promise<Clipping
         withRetry(() => clipCoupon(sessionData, coupon.id)).then((success) => ({
           coupon,
           success,
-        }))
-      )
+        })),
+      ),
     );
 
     // Process results
