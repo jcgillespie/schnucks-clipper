@@ -40,8 +40,17 @@ function getClientId(sessionData: SessionData): string {
   return sessionData.clientId;
 }
 
+// Optimization: Cache the cookie string to avoid repeated mapping and joining during batch operations
+let cachedCookieString: string | null = null;
+let lastCookiesRef: unknown = null;
+
 function getCookiesHeader(sessionData: SessionData): string {
-  return sessionData.cookies.map((c) => `${c.name}=${c.value}`).join('; ');
+  if (sessionData.cookies === lastCookiesRef && cachedCookieString !== null) {
+    return cachedCookieString;
+  }
+  cachedCookieString = sessionData.cookies.map((c) => `${c.name}=${c.value}`).join('; ');
+  lastCookiesRef = sessionData.cookies;
+  return cachedCookieString;
 }
 
 const getHeaders = (clientId: string, sessionData: SessionData) => ({

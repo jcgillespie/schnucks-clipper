@@ -130,4 +130,23 @@ describe('Session Management', () => {
     });
     assert.strictEqual(isValid, true);
   });
+
+  test('saveSessionData should set secure file permissions (0600)', async () => {
+    const sessionData = {
+      cookies: [],
+      clientId: 'test-id',
+    };
+    const originalSessionFile = config.sessionFile;
+    (config as { sessionFile: string }).sessionFile = testSessionPath;
+
+    try {
+      await saveSessionData(sessionData);
+      const stats = await fs.stat(testSessionPath);
+      // Mode contains file type as well, so we mask with 0777
+      const mode = stats.mode & 0o777;
+      assert.strictEqual(mode, 0o600, `Expected mode 0600, got ${mode.toString(8)}`);
+    } finally {
+      (config as { sessionFile: string }).sessionFile = originalSessionFile;
+    }
+  });
 });

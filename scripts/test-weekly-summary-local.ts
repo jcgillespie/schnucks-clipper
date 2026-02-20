@@ -97,11 +97,11 @@ function formatEmailSummary(executions: ExecutionResult[]): { html: string; text
 }
 
 async function testWithMockData() {
-  logger.info('Testing with mock data...');
+  logger.debug('Testing with mock data...');
   const executions = MOCK_EXECUTIONS;
   const { html, text } = formatEmailSummary(executions);
 
-  logger.info('Email formatted successfully', {
+  logger.debug('Email formatted successfully', {
     executionCount: executions.length,
     htmlLength: html.length,
     textLength: text.length,
@@ -117,8 +117,8 @@ async function testWithMockData() {
 }
 
 async function testWithRealAzure(workspaceId: string) {
-  logger.info('Testing with real Azure Log Analytics...');
-  logger.info('Authenticating to Azure...');
+  logger.debug('Testing with real Azure Log Analytics...');
+  logger.debug('Authenticating to Azure...');
 
   const credential = new DefaultAzureCredential();
   const client = new LogsQueryClient(credential);
@@ -163,13 +163,13 @@ failures
 | order by ExecutionTime desc
 `;
 
-  logger.info('Executing KQL query...', { workspaceId });
+  logger.debug('Executing KQL query...', { workspaceId });
   const result = await client.queryWorkspace(workspaceId, query, {
     duration: 'P7D',
   });
 
   if (result.status === LogsQueryResultStatus.Success) {
-    logger.info('Query executed successfully', {
+    logger.debug('Query executed successfully', {
       tables: result.tables.length,
       rows: result.tables.reduce((sum, table) => sum + table.rows.length, 0),
     });
@@ -217,7 +217,7 @@ failures
 }
 
 async function testEmailSending(html: string, text: string, useMailtrap = false) {
-  logger.info('Testing email sending...', { useMailtrap });
+  logger.debug('Testing email sending...', { useMailtrap });
 
   let transporter;
   if (useMailtrap) {
@@ -235,7 +235,7 @@ async function testEmailSending(html: string, text: string, useMailtrap = false)
       },
     });
 
-    logger.info('Using Mailtrap test SMTP (emails will be captured, not sent)');
+    logger.debug('Using Mailtrap test SMTP (emails will be captured, not sent)');
   } else {
     // Use actual SMTP from environment
     const smtpHost = process.env.SMTP_HOST || 'smtp.mailgun.org';
@@ -245,7 +245,7 @@ async function testEmailSending(html: string, text: string, useMailtrap = false)
 
     if (!smtpUser || !smtpPass) {
       logger.warn('SMTP credentials not found. Skipping email send test.');
-      logger.info('Set SMTP_USER and SMTP_PASS environment variables to test email sending.');
+      logger.debug('Set SMTP_USER and SMTP_PASS environment variables to test email sending.');
       return;
     }
 
@@ -259,7 +259,7 @@ async function testEmailSending(html: string, text: string, useMailtrap = false)
       },
     });
 
-    logger.info('Using configured SMTP server', { host: smtpHost, port: smtpPort });
+    logger.debug('Using configured SMTP server', { host: smtpHost, port: smtpPort });
   }
 
   const emailFrom = process.env.EMAIL_FROM || process.env.SMTP_USER || 'test@example.com';
@@ -269,7 +269,7 @@ async function testEmailSending(html: string, text: string, useMailtrap = false)
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const dateRange = `${sevenDaysAgo.toLocaleDateString()} - ${now.toLocaleDateString()}`;
 
-  logger.info('Sending test email...', { from: emailFrom, to: emailTo });
+  logger.debug('Sending test email...', { from: emailFrom, to: emailTo });
 
   const info = await transporter.sendMail({
     from: emailFrom,
@@ -279,13 +279,13 @@ async function testEmailSending(html: string, text: string, useMailtrap = false)
     text,
   });
 
-  logger.info('Email sent successfully', {
+  logger.debug('Email sent successfully', {
     messageId: info.messageId,
     response: info.response,
   });
 
   if (useMailtrap) {
-    logger.info('Check your Mailtrap inbox to view the email: https://mailtrap.io/inboxes');
+    logger.debug('Check your Mailtrap inbox to view the email: https://mailtrap.io/inboxes');
   }
 }
 
@@ -320,12 +320,12 @@ async function main() {
     if (args.includes('--send-email') || useMailtrap) {
       await testEmailSending(result.html, result.text, useMailtrap);
     } else {
-      logger.info(
+      logger.debug(
         'Skipping email send test. Use --send-email or --mailtrap to test email sending.',
       );
     }
 
-    logger.info('Test completed successfully');
+    logger.debug('Test completed successfully');
   } catch (error) {
     logger.error('Test failed', {
       error: error instanceof Error ? error.message : String(error),

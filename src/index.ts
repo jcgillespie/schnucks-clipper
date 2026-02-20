@@ -4,7 +4,7 @@ import { clipAllCoupons } from './clipper.js';
 import { runWeeklySummary } from './weekly-summary.js';
 
 async function runClipper() {
-  logger.info('Schnucks Coupon Clipper starting...');
+  logger.debug('Schnucks Coupon Clipper starting...');
 
   // 1. Load session data directly from file
   const sessionData = await loadSessionData();
@@ -26,7 +26,7 @@ async function runClipper() {
     // and not automatically rotating cookies. If cookie rotation is needed,
     // we would need to parse 'set-cookie' headers from responses.
 
-    logger.info('Job completed successfully.', { summary });
+    logger.debug('Job completed successfully.', { summary });
   } catch (error) {
     logger.error('An unexpected error occurred during execution.', {
       error: error instanceof Error ? error.message : String(error),
