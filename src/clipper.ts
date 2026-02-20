@@ -22,49 +22,36 @@ export async function clipAllCoupons(sessionData: SessionData): Promise<Clipping
 
   logger.debug(`Found ${coupons.length} available coupons.`);
 
-  const batchSize = config.clipConcurrency;
-  logger.info(`Processing coupons in batches of ${batchSize}`);
+  const concurrency = config.clipConcurrency;
+  logger.info(`Processing ${coupons.length} coupons with concurrency ${concurrency}`);
 
-  // Process coupons in batches
-  for (let i = 0; i < coupons.length; i += batchSize) {
-    const batch = coupons.slice(i, i + batchSize);
-    const batchNumber = Math.floor(i / batchSize) + 1;
-    const totalBatches = Math.ceil(coupons.length / batchSize);
+  // Use a worker pool to maintain constant concurrency and prevent slow requests from blocking batches
+  let currentIndex = 0;
+  const workers = Array.from({ length: Math.min(concurrency, coupons.length) }, async () => {
+    while (currentIndex < coupons.length) {
+      const index = currentIndex++;
+      const coupon = coupons[index];
+      if (!coupon) break;
 
-    logger.info(`Processing batch ${batchNumber}/${totalBatches} (${batch.length} coupons)`);
-
-    // Execute all clips in the batch concurrently with retry logic
-    const results = await Promise.allSettled(
-      batch.map((coupon) =>
-        withRetry(() => clipCoupon(sessionData, coupon.id)).then((success) => ({
-          coupon,
-          success,
-        })),
-      ),
-    );
-
-    // Process results
-    for (const result of results) {
-      if (result.status === 'fulfilled') {
-        const { coupon, success } = result.value;
+      try {
+        const success = await withRetry(() => clipCoupon(sessionData, coupon.id));
         if (success) {
           summary.clipped++;
-          // Removed per-coupon success logging to reduce log volume
-          // Success details are logged in the summary below
         } else {
           summary.failed++;
           logger.warn(`Failed to clip coupon: ${coupon.id}`, { description: coupon.description });
         }
-      } else {
-        // This case handles when withRetry exhausts all retries
+      } catch (error) {
         summary.failed++;
-        const error = result.reason;
         logger.error(`Error during clipping (retries exhausted)`, {
+          couponId: coupon.id,
           error: error instanceof Error ? error.message : String(error),
         });
       }
     }
-  }
+  });
+
+  await Promise.all(workers);
 
   logger.info('Coupon clipping process complete.', summary as unknown as Record<string, unknown>);
   return summary;
