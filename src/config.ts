@@ -29,7 +29,9 @@ function validateConfig(): Config {
   }
 
   if (clipConcurrency < 1 || clipConcurrency > 50) {
-    throw new Error(`INVALID_CONFIG: CLIP_CONCURRENCY must be between 1 and 50, got ${clipConcurrency}`);
+    throw new Error(
+      `INVALID_CONFIG: CLIP_CONCURRENCY must be between 1 and 50, got ${clipConcurrency}`,
+    );
   }
 
   return {

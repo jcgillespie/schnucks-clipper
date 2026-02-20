@@ -28,8 +28,12 @@ export async function saveSessionData(sessionData: SessionData): Promise<void> {
   const dataDir = path.dirname(sessionPath);
 
   try {
-    await fs.mkdir(dataDir, { recursive: true });
-    await fs.writeFile(sessionPath, JSON.stringify(sessionData, null, 2), 'utf-8');
+    await fs.mkdir(dataDir, { recursive: true, mode: 0o700 });
+    await fs.writeFile(sessionPath, JSON.stringify(sessionData, null, 2), {
+      encoding: 'utf-8',
+      mode: 0o600,
+    });
+    await fs.chmod(sessionPath, 0o600);
     logger.debug('Session data saved successfully', { path: sessionPath });
   } catch (error) {
     logger.error('Failed to save session data', {
