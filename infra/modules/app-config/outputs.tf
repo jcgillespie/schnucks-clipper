@@ -19,3 +19,9 @@ output "app_config_primary_read_key" {
   value       = azurerm_app_configuration.this.primary_read_key[0].connection_string
   sensitive   = true
 }
+
+output "app_config_primary_write_key" {
+  description = "Primary read/write key for App Configuration authentication"
+  value       = azurerm_app_configuration.this.primary_write_key[0].connection_string
+  sensitive   = true
+}
