@@ -252,9 +252,15 @@ describe('Run Summary → Email conversion (clip counts)', () => {
         jobExecution: r.executionId,
         Status: r.status === 'success' ? 'Succeeded' : 'Failed',
         ExecutionTime: new Date(r.timestamp).toISOString(),
-        Summary: r.status === 'success'
-          ? { total: (r.clipped ?? 0) + (r.failed ?? 0) + (r.skipped ?? 0), clipped: r.clipped ?? 0, failed: r.failed ?? 0, skipped: r.skipped ?? 0 }
-          : undefined,
+        Summary:
+          r.status === 'success'
+            ? {
+                total: (r.clipped ?? 0) + (r.failed ?? 0) + (r.skipped ?? 0),
+                clipped: r.clipped ?? 0,
+                failed: r.failed ?? 0,
+                skipped: r.skipped ?? 0,
+              }
+            : undefined,
       }));
 
     assert.strictEqual(executions.length, 1, 'only clipper runs should appear');

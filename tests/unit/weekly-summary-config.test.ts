@@ -88,7 +88,8 @@ describe('Weekly Summary Config', () => {
 
   test('should load all required configuration', () => {
     process.env.APP_CONFIG_ENDPOINT = 'https://my-app-config.azconfig.io';
-    process.env.APP_CONFIG_CONNECTION_STRING = 'Endpoint=https://my-app-config.azconfig.io;Id=abc;Secret=def';
+    process.env.APP_CONFIG_CONNECTION_STRING =
+      'Endpoint=https://my-app-config.azconfig.io;Id=abc;Secret=def';
     process.env.SMTP_HOST = 'smtp.mailgun.org';
     process.env.SMTP_PORT = '587';
     process.env.SMTP_USER = 'user@example.com';
@@ -104,7 +105,10 @@ describe('Weekly Summary Config', () => {
     const config = getWeeklySummaryConfig();
 
     assert.strictEqual(config.appConfigEndpoint, 'https://my-app-config.azconfig.io');
-    assert.strictEqual(config.appConfigConnectionString, 'Endpoint=https://my-app-config.azconfig.io;Id=abc;Secret=def');
+    assert.strictEqual(
+      config.appConfigConnectionString,
+      'Endpoint=https://my-app-config.azconfig.io;Id=abc;Secret=def',
+    );
     assert.strictEqual(config.smtpHost, 'smtp.mailgun.org');
     assert.strictEqual(config.smtpPort, 587);
     assert.strictEqual(config.smtpUser, 'user@example.com');

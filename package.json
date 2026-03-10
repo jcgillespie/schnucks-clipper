@@ -16,7 +16,8 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/unit/config.test.ts tests/unit/logger.test.ts tests/unit/session.test.ts tests/unit/api.test.ts tests/unit/clipper.test.ts tests/unit/run-summary-store.test.ts tests/unit/run-summary-store-appconfig.test.ts tests/unit/weekly-summary-config.test.ts tests/unit/weekly-summary.test.ts tests/integration/clipper.integration.test.ts",
     "test:weekly-summary": "tsx scripts/test-weekly-summary-local.ts",
-    "session:init": "tsx src/session-init.ts"
+    "session:init": "tsx src/session-init.ts",
+    "validate": "pnpm format && pnpm lint:fix && pnpm typecheck && pnpm test && pnpm build && pnpm bundle"
   },
   "keywords": [
     "schnucks",

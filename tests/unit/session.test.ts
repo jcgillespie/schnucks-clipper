@@ -153,7 +153,13 @@ describe('Session Management', () => {
   test('loadSessionData should load from SESSION_JSON_B64 env var', async () => {
     const sessionData = {
       cookies: [
-        { name: 'session', value: 'cookie-val', domain: 'schnucks.com', path: '/', expires: 9999999999 },
+        {
+          name: 'session',
+          value: 'cookie-val',
+          domain: 'schnucks.com',
+          path: '/',
+          expires: 9999999999,
+        },
       ],
       clientId: 'injected-client-id',
     };
@@ -186,7 +192,11 @@ describe('Session Management', () => {
 
     try {
       const loaded = await loadSessionData();
-      assert.strictEqual(loaded.clientId, 'env-client-id', 'SESSION_JSON_B64 should take precedence over file');
+      assert.strictEqual(
+        loaded.clientId,
+        'env-client-id',
+        'SESSION_JSON_B64 should take precedence over file',
+      );
     } finally {
       (config as { sessionFile: string }).sessionFile = originalSessionFile;
       (config as { sessionJsonB64?: string }).sessionJsonB64 = originalB64;

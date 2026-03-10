@@ -19,7 +19,7 @@ function makeRun(overrides: Partial<RunSummary> = {}): RunSummary {
 
 function makeFakeClient(overrides: Partial<AppConfigurationClient> = {}): AppConfigurationClient {
   return {
-    setConfigurationSetting: mock.fn(async () => ({} as ConfigurationSetting<string>)),
+    setConfigurationSetting: mock.fn(async () => ({}) as ConfigurationSetting<string>),
     listConfigurationSettings: mock.fn(async function* () {}),
     ...overrides,
   } as unknown as AppConfigurationClient;
@@ -50,7 +50,8 @@ describe('AppConfigRunSummaryStore', () => {
 
       await store.writeRun(makeRun());
 
-      const arg = (client.setConfigurationSetting as ReturnType<typeof mock.fn>).mock.calls[0].arguments[0];
+      const arg = (client.setConfigurationSetting as ReturnType<typeof mock.fn>).mock.calls[0]
+        .arguments[0];
       assert.strictEqual(arg.label, 'run');
       assert.strictEqual(arg.contentType, 'application/json');
     });
@@ -62,7 +63,8 @@ describe('AppConfigRunSummaryStore', () => {
 
       await store.writeRun(run);
 
-      const arg = (client.setConfigurationSetting as ReturnType<typeof mock.fn>).mock.calls[0].arguments[0];
+      const arg = (client.setConfigurationSetting as ReturnType<typeof mock.fn>).mock.calls[0]
+        .arguments[0];
       const parsed = JSON.parse(arg.value);
       assert.strictEqual(parsed.clipped, 7);
       assert.strictEqual(parsed.failed, 1);
@@ -71,7 +73,9 @@ describe('AppConfigRunSummaryStore', () => {
 
     test('throws when setConfigurationSetting rejects', async () => {
       const client = makeFakeClient({
-        setConfigurationSetting: mock.fn(async () => { throw new Error('network error'); }),
+        setConfigurationSetting: mock.fn(async () => {
+          throw new Error('network error');
+        }),
       });
       const store = storeWith(client);
 
@@ -162,9 +166,15 @@ describe('AppConfigRunSummaryStore', () => {
 
     test('throws when listConfigurationSettings rejects', async () => {
       const client = makeFakeClient({
-        listConfigurationSettings: mock.fn(async function* () {
-          throw new Error('upstream failure');
-        }),
+        listConfigurationSettings: mock.fn(() => ({
+          [Symbol.asyncIterator]() {
+            return {
+              next() {
+                return Promise.reject(new Error('upstream failure'));
+              },
+            };
+          },
+        })),
       });
       const store = storeWith(client);
 
@@ -174,7 +184,11 @@ describe('AppConfigRunSummaryStore', () => {
     test('returns empty array when no runs match the time window', async () => {
       const client = makeFakeClient({
         listConfigurationSettings: mock.fn(async function* () {
-          yield { key: 'run:100:a', value: JSON.stringify(makeRun({ timestamp: 100 })), label: 'run' };
+          yield {
+            key: 'run:100:a',
+            value: JSON.stringify(makeRun({ timestamp: 100 })),
+            label: 'run',
+          };
         }),
       });
       const store = storeWith(client);

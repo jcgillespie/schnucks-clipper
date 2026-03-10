@@ -46,14 +46,20 @@ async function runClipper() {
 
       // Write failure record to summary store (best-effort; don't let telemetry mask the real error)
       if (runSummaryStore) {
-        await runSummaryStore.writeRun({
-          timestamp: Date.now(),
-          executionId,
-          status: 'failure',
-          jobType: 'clipper',
-          errorReasons: ['RE-AUTHENTICATE'],
-          errorMessage: 'Valid session not found - authentication required',
-        }).catch((err) => logger.warn('Failed to write run summary', { error: err instanceof Error ? err.message : String(err) }));
+        await runSummaryStore
+          .writeRun({
+            timestamp: Date.now(),
+            executionId,
+            status: 'failure',
+            jobType: 'clipper',
+            errorReasons: ['RE-AUTHENTICATE'],
+            errorMessage: 'Valid session not found - authentication required',
+          })
+          .catch((err) =>
+            logger.warn('Failed to write run summary', {
+              error: err instanceof Error ? err.message : String(err),
+            }),
+          );
       }
 
       process.exit(1);
@@ -70,15 +76,21 @@ async function runClipper() {
 
     // Write success record to summary store (best-effort; don't let telemetry fail the job)
     if (runSummaryStore) {
-      await runSummaryStore.writeRun({
-        timestamp: Date.now(),
-        executionId,
-        status: 'success',
-        jobType: 'clipper',
-        clipped: summary.clipped,
-        failed: summary.failed,
-        skipped: summary.skipped,
-      }).catch((err) => logger.warn('Failed to write run summary', { error: err instanceof Error ? err.message : String(err) }));
+      await runSummaryStore
+        .writeRun({
+          timestamp: Date.now(),
+          executionId,
+          status: 'success',
+          jobType: 'clipper',
+          clipped: summary.clipped,
+          failed: summary.failed,
+          skipped: summary.skipped,
+        })
+        .catch((err) =>
+          logger.warn('Failed to write run summary', {
+            error: err instanceof Error ? err.message : String(err),
+          }),
+        );
     }
   } catch (error) {
     logger.error('An unexpected error occurred during execution.', {
@@ -88,14 +100,20 @@ async function runClipper() {
 
     // Write failure record to summary store (best-effort)
     if (runSummaryStore) {
-      await runSummaryStore.writeRun({
-        timestamp: Date.now(),
-        executionId,
-        status: 'failure',
-        jobType: 'clipper',
-        errorReasons: ['EXECUTION_ERROR'],
-        errorMessage: error instanceof Error ? error.message : String(error),
-      }).catch((err) => logger.warn('Failed to write run summary', { error: err instanceof Error ? err.message : String(err) }));
+      await runSummaryStore
+        .writeRun({
+          timestamp: Date.now(),
+          executionId,
+          status: 'failure',
+          jobType: 'clipper',
+          errorReasons: ['EXECUTION_ERROR'],
+          errorMessage: error instanceof Error ? error.message : String(error),
+        })
+        .catch((err) =>
+          logger.warn('Failed to write run summary', {
+            error: err instanceof Error ? err.message : String(err),
+          }),
+        );
     }
 
     process.exit(1);
