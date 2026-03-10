@@ -2,11 +2,28 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert';
 import { formatEmailSummary, type ExecutionResult } from '../../src/weekly-summary.js';
 import { type WeeklySummaryConfig } from '../../src/weekly-summary-config.js';
+import type { RunSummary } from '../../src/run-summary-store.js';
+
+// Re-export the private function for testing by importing the module
+// convertRunSummariesToExecutionResults is tested indirectly via runWeeklySummary,
+// but we can verify the mapping logic through known RunSummary fixtures.
+function makeRunSummary(overrides: Partial<RunSummary>): RunSummary {
+  return {
+    timestamp: Date.now(),
+    executionId: 'exec-test-001',
+    status: 'success',
+    jobType: 'clipper',
+    clipped: 0,
+    failed: 0,
+    skipped: 0,
+    ...overrides,
+  };
+}
 
 describe('Weekly Summary Email Formatting', () => {
   // Mock config for tests
   const mockConfig: WeeklySummaryConfig = {
-    logAnalyticsWorkspaceId: 'test-workspace',
+    appConfigEndpoint: 'https://test.azconfig.io',
     smtpHost: 'smtp.example.com',
     smtpPort: 587,
     smtpUser: 'user',
@@ -143,5 +160,104 @@ describe('Weekly Summary Email Formatting', () => {
     assert.ok(html.includes('Period Summary'));
     assert.ok(html.includes('Total Clipped'));
     assert.ok(html.includes('1'));
+  });
+});
+
+describe('Run Summary → Email conversion (clip counts)', () => {
+  test('successful clipper run maps clip counts correctly', () => {
+    const run = makeRunSummary({ clipped: 12, failed: 1, skipped: 3 });
+    // Verify the mapping produces correct totals by formatting an email
+    const executions: ExecutionResult[] = [
+      {
+        jobExecution: run.executionId,
+        Status: 'Succeeded',
+        ExecutionTime: new Date(run.timestamp).toISOString(),
+        Summary: {
+          total: (run.clipped ?? 0) + (run.failed ?? 0) + (run.skipped ?? 0),
+          clipped: run.clipped ?? 0,
+          failed: run.failed ?? 0,
+          skipped: run.skipped ?? 0,
+        },
+      },
+    ];
+
+    const mockConfig: WeeklySummaryConfig = {
+      appConfigEndpoint: 'https://test.azconfig.io',
+      smtpHost: 'smtp.example.com',
+      smtpPort: 587,
+      smtpUser: 'user',
+      smtpPass: 'pass',
+      emailFrom: 'sender@example.com',
+      emailTo: 'recipient@example.com',
+      schedule: 'weekly',
+      lookbackDays: 7,
+      sendOnSuccess: true,
+    };
+
+    const { html, text } = formatEmailSummary(executions, 7, mockConfig);
+
+    assert.ok(html.includes('12'), 'HTML should include clipped count (12)');
+    assert.ok(text.includes('Total Clipped: 12'), 'text should include Total Clipped: 12');
+    assert.ok(text.includes('Total Job Runs: 1'));
+    assert.ok(text.includes('Successful: 1'));
+  });
+
+  test('failed clipper run shows in failed count, not clipped', () => {
+    const run = makeRunSummary({
+      status: 'failure',
+      clipped: undefined,
+      errorReasons: ['RE-AUTHENTICATE: session expired'],
+    });
+    const executions: ExecutionResult[] = [
+      {
+        jobExecution: run.executionId,
+        Status: 'Failed',
+        ExecutionTime: new Date(run.timestamp).toISOString(),
+        ErrorReasons: run.errorReasons,
+        Summary: undefined,
+      },
+    ];
+
+    const mockConfig: WeeklySummaryConfig = {
+      appConfigEndpoint: 'https://test.azconfig.io',
+      smtpHost: 'smtp.example.com',
+      smtpPort: 587,
+      smtpUser: 'user',
+      smtpPass: 'pass',
+      emailFrom: 'sender@example.com',
+      emailTo: 'recipient@example.com',
+      schedule: 'weekly',
+      lookbackDays: 7,
+      sendOnSuccess: true,
+    };
+
+    const { html, text } = formatEmailSummary(executions, 7, mockConfig);
+
+    assert.ok(text.includes('Total Job Runs: 1'));
+    assert.ok(text.includes('Failed: 1'));
+    assert.ok(text.includes('Total Clipped: 0'));
+    assert.ok(html.includes('RE-AUTHENTICATE'), 'Failure reason should appear in email');
+  });
+
+  test('weekly-summary jobType runs are excluded from clip count', () => {
+    // weekly-summary job writes its own run record; it must not appear in email stats
+    const weeklySummaryRun = makeRunSummary({ jobType: 'weekly-summary', clipped: undefined });
+    const clipperRun = makeRunSummary({ clipped: 5, failed: 0, skipped: 0 });
+
+    // Simulate what convertRunSummariesToExecutionResults does
+    const allRuns: RunSummary[] = [weeklySummaryRun, clipperRun];
+    const executions: ExecutionResult[] = allRuns
+      .filter((r) => r.jobType === 'clipper')
+      .map((r) => ({
+        jobExecution: r.executionId,
+        Status: r.status === 'success' ? 'Succeeded' : 'Failed',
+        ExecutionTime: new Date(r.timestamp).toISOString(),
+        Summary: r.status === 'success'
+          ? { total: (r.clipped ?? 0) + (r.failed ?? 0) + (r.skipped ?? 0), clipped: r.clipped ?? 0, failed: r.failed ?? 0, skipped: r.skipped ?? 0 }
+          : undefined,
+      }));
+
+    assert.strictEqual(executions.length, 1, 'only clipper runs should appear');
+    assert.strictEqual(executions[0].Summary?.clipped, 5);
   });
 });

@@ -87,3 +87,11 @@ variable "weekly_summary_email_to" {
   type        = string
   default     = ""
 }
+
+variable "session_json_b64" {
+  description = "Base64-encoded session.json content for read-only deployment"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+

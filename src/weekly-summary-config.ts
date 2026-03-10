@@ -3,7 +3,8 @@ import dotenv from 'dotenv';
 dotenv.config({ override: true });
 
 export interface WeeklySummaryConfig {
-  logAnalyticsWorkspaceId: string;
+  appConfigEndpoint: string;
+  appConfigConnectionString?: string;
   smtpHost: string;
   smtpPort: number;
   smtpUser: string;
@@ -18,7 +19,8 @@ export interface WeeklySummaryConfig {
 }
 
 function validateConfig(): WeeklySummaryConfig {
-  const logAnalyticsWorkspaceId = process.env.LOG_ANALYTICS_WORKSPACE_ID;
+  const appConfigEndpoint = process.env.APP_CONFIG_ENDPOINT;
+  const appConfigConnectionString = process.env.APP_CONFIG_CONNECTION_STRING;
   const smtpHost = process.env.SMTP_HOST;
   const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10);
   const smtpUser = process.env.SMTP_USER;
@@ -32,8 +34,8 @@ function validateConfig(): WeeklySummaryConfig {
   const lookbackDays = schedule === 'daily' ? 1 : 7;
   const sendOnSuccess = process.env.HEALTH_DIGEST_SEND_ON_SUCCESS === 'true';
 
-  if (!logAnalyticsWorkspaceId) {
-    throw new Error('MISSING_CONFIG: LOG_ANALYTICS_WORKSPACE_ID environment variable is required.');
+  if (!appConfigEndpoint) {
+    throw new Error('MISSING_CONFIG: APP_CONFIG_ENDPOINT environment variable is required.');
   }
 
   if (!smtpHost) {
@@ -63,7 +65,8 @@ function validateConfig(): WeeklySummaryConfig {
   }
 
   return {
-    logAnalyticsWorkspaceId,
+    appConfigEndpoint,
+    appConfigConnectionString,
     smtpHost,
     smtpPort,
     schedule,

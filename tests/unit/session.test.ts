@@ -149,4 +149,47 @@ describe('Session Management', () => {
       (config as { sessionFile: string }).sessionFile = originalSessionFile;
     }
   });
+
+  test('loadSessionData should load from SESSION_JSON_B64 env var', async () => {
+    const sessionData = {
+      cookies: [
+        { name: 'session', value: 'cookie-val', domain: 'schnucks.com', path: '/', expires: 9999999999 },
+      ],
+      clientId: 'injected-client-id',
+    };
+    const encoded = Buffer.from(JSON.stringify(sessionData)).toString('base64');
+    const originalB64 = config.sessionJsonB64;
+    (config as { sessionJsonB64?: string }).sessionJsonB64 = encoded;
+
+    try {
+      const loaded = await loadSessionData();
+      assert.strictEqual(loaded.clientId, 'injected-client-id');
+      assert.strictEqual(loaded.cookies.length, 1);
+      assert.strictEqual(loaded.cookies[0].name, 'session');
+    } finally {
+      (config as { sessionJsonB64?: string }).sessionJsonB64 = originalB64;
+    }
+  });
+
+  test('loadSessionData SESSION_JSON_B64 takes precedence over file', async () => {
+    // Write a different session to the file
+    const fileSession = { cookies: [], clientId: 'file-client-id' };
+    const originalSessionFile = config.sessionFile;
+    (config as { sessionFile: string }).sessionFile = testSessionPath;
+    await saveSessionData(fileSession);
+
+    // Set config b64 with different data
+    const envSession = { cookies: [], clientId: 'env-client-id' };
+    const encoded = Buffer.from(JSON.stringify(envSession)).toString('base64');
+    const originalB64 = config.sessionJsonB64;
+    (config as { sessionJsonB64?: string }).sessionJsonB64 = encoded;
+
+    try {
+      const loaded = await loadSessionData();
+      assert.strictEqual(loaded.clientId, 'env-client-id', 'SESSION_JSON_B64 should take precedence over file');
+    } finally {
+      (config as { sessionFile: string }).sessionFile = originalSessionFile;
+      (config as { sessionJsonB64?: string }).sessionJsonB64 = originalB64;
+    }
+  });
 });

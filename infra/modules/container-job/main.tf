@@ -1,17 +1,7 @@
 resource "azurerm_container_app_environment" "this" {
-  name                       = var.environment_name
-  location                   = var.location
-  resource_group_name        = var.resource_group_name
-  log_analytics_workspace_id = var.log_analytics_workspace_id
-}
-
-resource "azurerm_container_app_environment_storage" "this" {
-  name                         = "clipper-storage"
-  container_app_environment_id = azurerm_container_app_environment.this.id
-  account_name                 = var.storage_account_name
-  share_name                   = var.file_share_name
-  access_key                   = var.storage_account_key
-  access_mode                  = "ReadWrite"
+  name                = var.environment_name
+  location            = var.location
+  resource_group_name = var.resource_group_name
 }
 
 resource "azurerm_container_app_job" "this" {
@@ -26,6 +16,16 @@ resource "azurerm_container_app_job" "this" {
   secret {
     name  = "registry-password"
     value = var.registry_password
+  }
+
+  secret {
+    name  = "session-json-b64"
+    value = var.session_json_b64
+  }
+
+  secret {
+    name  = "app-config-connection"
+    value = var.app_config_connection_string
   }
 
   registry {
@@ -45,18 +45,19 @@ resource "azurerm_container_app_job" "this" {
       cpu    = var.cpu
       memory = var.memory
 
-      volume_mounts {
-        name = "clipper-data"
-        path = "/data"
+      env {
+        name        = "SESSION_JSON_B64"
+        secret_name = "session-json-b64"
       }
 
       env {
-        name  = "DATA_PATH"
-        value = "/data"
+        name  = "APP_CONFIG_ENDPOINT"
+        value = var.app_config_endpoint
       }
+
       env {
-        name  = "SESSION_FILE"
-        value = "/data/session.json"
+        name        = "APP_CONFIG_CONNECTION_STRING"
+        secret_name = "app-config-connection"
       }
       env {
         name  = "LOG_LEVEL"
@@ -64,10 +65,6 @@ resource "azurerm_container_app_job" "this" {
       }
     }
 
-    volume {
-      name         = "clipper-data"
-      storage_name = azurerm_container_app_environment_storage.this.name
-      storage_type = "AzureFile"
-    }
+
   }
 }

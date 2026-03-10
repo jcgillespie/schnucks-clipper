@@ -7,6 +7,9 @@ export interface Config {
   schnucksBaseUrl: string;
   dataPath: string;
   sessionFile: string;
+  sessionJsonB64?: string;
+  appConfigEndpoint?: string;
+  appConfigConnectionString?: string;
   logLevel: string;
   clipConcurrency: number;
 }
@@ -17,6 +20,9 @@ function validateConfig(): Config {
   const sessionFile = process.env.SESSION_FILE || path.join(dataPath, 'session.json');
   const logLevel = process.env.LOG_LEVEL || 'info';
   const clipConcurrency = parseInt(process.env.CLIP_CONCURRENCY || '10', 10);
+  const sessionJsonB64 = process.env.SESSION_JSON_B64;
+  const appConfigEndpoint = process.env.APP_CONFIG_ENDPOINT;
+  const appConfigConnectionString = process.env.APP_CONFIG_CONNECTION_STRING;
 
   if (!schnucksBaseUrl) {
     throw new Error('MISSING_CONFIG: SCHNUCKS_BASE_URL environment variable is required.');
@@ -38,6 +44,9 @@ function validateConfig(): Config {
     schnucksBaseUrl,
     dataPath: path.resolve(dataPath),
     sessionFile: path.resolve(sessionFile),
+    sessionJsonB64,
+    appConfigEndpoint,
+    appConfigConnectionString,
     logLevel: logLevel.toLowerCase(),
     clipConcurrency,
   };

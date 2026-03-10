@@ -13,7 +13,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/unit/config.test.ts tests/unit/logger.test.ts tests/unit/session.test.ts tests/unit/api.test.ts tests/unit/clipper.test.ts tests/unit/weekly-summary-config.test.ts tests/unit/weekly-summary.test.ts tests/integration/clipper.integration.test.ts",
+    "test": "tsx --test tests/unit/config.test.ts tests/unit/logger.test.ts tests/unit/session.test.ts tests/unit/api.test.ts tests/unit/clipper.test.ts tests/unit/run-summary-store.test.ts tests/unit/weekly-summary-config.test.ts tests/unit/weekly-summary.test.ts tests/integration/clipper.integration.test.ts",
     "test:weekly-summary": "tsx scripts/test-weekly-summary-local.ts",
     "session:init": "tsx src/session-init.ts"
   },
@@ -26,8 +26,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@azure/app-configuration": "^1.7.0",
     "@azure/identity": "^4.4.0",
-    "@azure/monitor-query-logs": "^1.0.0",
     "dotenv": "^16.3.1",
     "nodemailer": "^7.0.12"
   },

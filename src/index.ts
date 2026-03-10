@@ -1,10 +1,37 @@
 import { logger } from './logger.js';
+import { config } from './config.js';
 import { loadSessionData, isSessionValid } from './session.js';
 import { clipAllCoupons } from './clipper.js';
 import { runWeeklySummary } from './weekly-summary.js';
+import { AppConfigRunSummaryStore } from './run-summary-store-appconfig.js';
+import type { IRunSummaryStore } from './run-summary-store.js';
+
+// Initialize run summary store if app config is configured
+let runSummaryStore: IRunSummaryStore | null = null;
+
+if (config.appConfigEndpoint) {
+  try {
+    runSummaryStore = new AppConfigRunSummaryStore(
+      config.appConfigEndpoint,
+      config.appConfigConnectionString,
+    );
+    logger.debug('Run summary store initialized with App Configuration');
+  } catch (error) {
+    logger.warn('Failed to initialize run summary store', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+// Generate a unique execution ID
+function generateExecutionId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substring(7)}`;
+}
 
 async function runClipper() {
   logger.debug('Schnucks Coupon Clipper starting...');
+
+  const executionId = generateExecutionId();
 
   // 1. Load session data directly from file
   const sessionData = await loadSessionData();
@@ -16,6 +43,19 @@ async function runClipper() {
       logger.error('1. Run the clipping application locally with `npm run session:init`');
       logger.error('2. Perform manual login and TFA');
       logger.error('3. Ensure the browser is closed after login to save session.json');
+
+      // Write failure record to summary store
+      if (runSummaryStore) {
+        await runSummaryStore.writeRun({
+          timestamp: Date.now(),
+          executionId,
+          status: 'failure',
+          jobType: 'clipper',
+          errorReasons: ['RE-AUTHENTICATE'],
+          errorMessage: 'Valid session not found - authentication required',
+        });
+      }
+
       process.exit(1);
     }
 
@@ -27,11 +67,37 @@ async function runClipper() {
     // we would need to parse 'set-cookie' headers from responses.
 
     logger.debug('Job completed successfully.', { summary });
+
+    // Write success record to summary store
+    if (runSummaryStore) {
+      await runSummaryStore.writeRun({
+        timestamp: Date.now(),
+        executionId,
+        status: 'success',
+        jobType: 'clipper',
+        clipped: summary.clipped,
+        failed: summary.failed,
+        skipped: summary.skipped,
+      });
+    }
   } catch (error) {
     logger.error('An unexpected error occurred during execution.', {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
+
+    // Write failure record to summary store
+    if (runSummaryStore) {
+      await runSummaryStore.writeRun({
+        timestamp: Date.now(),
+        executionId,
+        status: 'failure',
+        jobType: 'clipper',
+        errorReasons: ['EXECUTION_ERROR'],
+        errorMessage: error instanceof Error ? error.message : String(error),
+      });
+    }
+
     process.exit(1);
   }
 }

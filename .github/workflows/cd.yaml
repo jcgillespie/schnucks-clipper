@@ -94,6 +94,7 @@ jobs:
             -var "image_name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main" \
             -var "registry_username=${{ github.actor }}" \
             -var "registry_password=${{ secrets.GHCR_PAT }}" \
+            -var "session_json_b64=${{ secrets.SESSION_JSON_B64 }}" \
             -var "smtp_host=${{ secrets.SMTP_HOST }}" \
             -var "smtp_user=${{ secrets.SMTP_USER }}" \
             -var "smtp_password=${{ secrets.SMTP_PASSWORD }}" \

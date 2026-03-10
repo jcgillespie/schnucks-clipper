@@ -2,16 +2,16 @@ output "resource_group_name" {
   value = azurerm_resource_group.this.name
 }
 
-output "storage_account_name" {
-  value = module.storage.storage_account_name
+output "app_config_name" {
+  value = module.app_config.app_config_name
 }
 
-output "file_share_name" {
-  value = module.storage.file_share_name
+output "app_config_endpoint" {
+  value = module.app_config.app_config_endpoint
 }
 
-output "storage_account_key" {
-  value     = module.storage.primary_access_key
+output "app_config_connection_string" {
+  value     = module.app_config.app_config_primary_read_key
   sensitive = true
 }
 
