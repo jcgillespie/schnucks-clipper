@@ -44,7 +44,7 @@ async function runClipper() {
       logger.error('2. Perform manual login and TFA');
       logger.error('3. Ensure the browser is closed after login to save session.json');
 
-      // Write failure record to summary store
+      // Write failure record to summary store (best-effort; don't let telemetry mask the real error)
       if (runSummaryStore) {
         await runSummaryStore.writeRun({
           timestamp: Date.now(),
@@ -53,7 +53,7 @@ async function runClipper() {
           jobType: 'clipper',
           errorReasons: ['RE-AUTHENTICATE'],
           errorMessage: 'Valid session not found - authentication required',
-        });
+        }).catch((err) => logger.warn('Failed to write run summary', { error: err instanceof Error ? err.message : String(err) }));
       }
 
       process.exit(1);
@@ -68,7 +68,7 @@ async function runClipper() {
 
     logger.debug('Job completed successfully.', { summary });
 
-    // Write success record to summary store
+    // Write success record to summary store (best-effort; don't let telemetry fail the job)
     if (runSummaryStore) {
       await runSummaryStore.writeRun({
         timestamp: Date.now(),
@@ -78,7 +78,7 @@ async function runClipper() {
         clipped: summary.clipped,
         failed: summary.failed,
         skipped: summary.skipped,
-      });
+      }).catch((err) => logger.warn('Failed to write run summary', { error: err instanceof Error ? err.message : String(err) }));
     }
   } catch (error) {
     logger.error('An unexpected error occurred during execution.', {
@@ -86,7 +86,7 @@ async function runClipper() {
       stack: error instanceof Error ? error.stack : undefined,
     });
 
-    // Write failure record to summary store
+    // Write failure record to summary store (best-effort)
     if (runSummaryStore) {
       await runSummaryStore.writeRun({
         timestamp: Date.now(),
@@ -95,7 +95,7 @@ async function runClipper() {
         jobType: 'clipper',
         errorReasons: ['EXECUTION_ERROR'],
         errorMessage: error instanceof Error ? error.message : String(error),
-      });
+      }).catch((err) => logger.warn('Failed to write run summary', { error: err instanceof Error ? err.message : String(err) }));
     }
 
     process.exit(1);

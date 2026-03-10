@@ -10,9 +10,10 @@ import type { RunSummary, IRunSummaryStore } from './run-summary-store.js';
 export class AppConfigRunSummaryStore implements IRunSummaryStore {
   private client: AppConfigurationClient;
 
-  constructor(endpoint: string, connectionString?: string) {
-    // Prefer connection string if provided, otherwise use DefaultAzureCredential
-    if (connectionString) {
+  constructor(endpoint: string, connectionString?: string, client?: AppConfigurationClient) {
+    if (client) {
+      this.client = client;
+    } else if (connectionString) {
       this.client = new AppConfigurationClient(connectionString);
     } else {
       this.client = new AppConfigurationClient(endpoint, new DefaultAzureCredential());
