@@ -23,14 +23,12 @@ module "container_job" {
   image_name          = var.image_name
   cron_schedule       = var.cron_schedule
 
-  app_config_endpoint          = module.app_config.app_config_endpoint
-  app_config_connection_string = module.app_config.app_config_primary_read_key
+  app_config_endpoint = module.app_config.app_config_endpoint
 
   registry_server   = var.registry_server
   registry_username = var.registry_username
   registry_password = var.registry_password
 
-  # Session credentials (base64 encoded)
   session_json_b64 = var.session_json_b64
 
   # Daily health digest configuration (optional)
@@ -40,4 +38,17 @@ module "container_job" {
   smtp_password = var.smtp_password
   email_from    = var.weekly_summary_email_from
   email_to      = var.weekly_summary_email_to
+}
+
+resource "azurerm_role_assignment" "clipper_app_config" {
+  scope                = module.app_config.app_config_id
+  role_definition_name = "App Configuration Data Owner"
+  principal_id         = module.container_job.clipper_job_principal_id
+}
+
+resource "azurerm_role_assignment" "weekly_summary_app_config" {
+  count                = module.container_job.weekly_summary_enabled ? 1 : 0
+  scope                = module.app_config.app_config_id
+  role_definition_name = "App Configuration Data Reader"
+  principal_id         = module.container_job.weekly_summary_principal_id
 }

@@ -10,6 +10,10 @@ resource "azurerm_container_app_job" "this" {
   resource_group_name          = var.resource_group_name
   container_app_environment_id = azurerm_container_app_environment.this.id
 
+  identity {
+    type = "SystemAssigned"
+  }
+
   replica_timeout_in_seconds = 300
   replica_retry_limit        = 1
 
@@ -21,11 +25,6 @@ resource "azurerm_container_app_job" "this" {
   secret {
     name  = "session-json-b64"
     value = var.session_json_b64
-  }
-
-  secret {
-    name  = "app-config-connection"
-    value = var.app_config_connection_string
   }
 
   registry {
@@ -55,10 +54,6 @@ resource "azurerm_container_app_job" "this" {
         value = var.app_config_endpoint
       }
 
-      env {
-        name        = "APP_CONFIG_CONNECTION_STRING"
-        secret_name = "app-config-connection"
-      }
       env {
         name  = "LOG_LEVEL"
         value = "info"
