@@ -23,7 +23,7 @@ module "container_job" {
   image_name          = var.image_name
   cron_schedule       = var.cron_schedule
 
-  app_config_endpoint = module.app_config.app_config_endpoint
+  app_config_endpoint          = module.app_config.app_config_endpoint
   app_config_connection_string = module.app_config.app_config_primary_write_key
 
   registry_server   = var.registry_server
