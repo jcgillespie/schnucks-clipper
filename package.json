@@ -1,6 +1,7 @@
 {
   "name": "schnucks-coupons",
   "version": "1.0.0",
+  "packageManager": "pnpm@10.30.3",
   "type": "module",
   "description": "Automated coupon clipper for Schnucks",
   "main": "dist/index.cjs",
@@ -26,22 +27,23 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@azure/app-configuration": "^1.7.0",
-    "@azure/identity": "^4.4.0",
-    "dotenv": "^16.3.1",
-    "nodemailer": "^7.0.12"
+    "@azure/app-configuration": "^1.11.0",
+    "@azure/identity": "^4.13.0",
+    "dotenv": "^16.6.1",
+    "nodemailer": "^7.0.13"
   },
   "devDependencies": {
-    "@types/node": "^20.10.5",
-    "@types/nodemailer": "^6.4.14",
-    "esbuild": "^0.27.2",
-    "eslint": "^9.39.2",
+    "@eslint/js": "^9.39.4",
+    "@types/node": "^20.19.37",
+    "@types/nodemailer": "^6.4.23",
+    "esbuild": "^0.27.3",
+    "eslint": "^9.39.4",
     "eslint-config-prettier": "^9.1.2",
-    "globals": "^17.0.0",
-    "playwright-chromium": "^1.57.0",
-    "prettier": "^3.1.1",
+    "globals": "^17.4.0",
+    "playwright-chromium": "^1.58.2",
+    "prettier": "^3.8.1",
     "tsx": "^4.21.0",
-    "typescript": "^5.3.3",
-    "typescript-eslint": "^8.53.0"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.57.0"
   }
 }
