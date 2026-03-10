@@ -146,18 +146,14 @@ export function formatEmailSummary(
   const summary = aggregateExecutions(executions);
 
   // Determine status badge
-  let statusBadge = '';
-  let statusEmoji = '';
-  if (healthStatus.status === 'healthy') {
-    statusBadge = '<span class="status-badge status-healthy">✅ All Systems Operational</span>';
-    statusEmoji = '✅';
-  } else if (healthStatus.status === 'warning') {
-    statusBadge = '<span class="status-badge status-warning">⚠️ Warnings Detected</span>';
-    statusEmoji = '⚠️';
-  } else {
-    statusBadge = '<span class="status-badge status-error">❌ Failures Detected</span>';
-    statusEmoji = '❌';
-  }
+  const statusBadge =
+    healthStatus.status === 'healthy'
+      ? '<span class="status-badge status-healthy">✅ All Systems Operational</span>'
+      : healthStatus.status === 'warning'
+        ? '<span class="status-badge status-warning">⚠️ Warnings Detected</span>'
+        : '<span class="status-badge status-error">❌ Failures Detected</span>';
+  const statusEmoji =
+    healthStatus.status === 'healthy' ? '✅' : healthStatus.status === 'warning' ? '⚠️' : '❌';
 
   // HTML version
   let html = `

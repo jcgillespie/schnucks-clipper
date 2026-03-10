@@ -29,16 +29,16 @@
   "dependencies": {
     "@azure/app-configuration": "^1.11.0",
     "@azure/identity": "^4.13.0",
-    "dotenv": "^16.6.1",
-    "nodemailer": "^7.0.13"
+    "dotenv": "^17.3.1",
+    "nodemailer": "^8.0.2"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.4",
-    "@types/node": "^20.19.37",
-    "@types/nodemailer": "^6.4.23",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.12.0",
+    "@types/nodemailer": "^7.0.11",
     "esbuild": "^0.27.3",
-    "eslint": "^9.39.4",
-    "eslint-config-prettier": "^9.1.2",
+    "eslint": "^10.0.3",
+    "eslint-config-prettier": "^10.1.8",
     "globals": "^17.4.0",
     "playwright-chromium": "^1.58.2",
     "prettier": "^3.8.1",

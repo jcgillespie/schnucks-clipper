@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import path from 'path';
 
-dotenv.config({ override: true });
+dotenv.config({ override: true, quiet: true });
 
 export interface Config {
   schnucksBaseUrl: string;
