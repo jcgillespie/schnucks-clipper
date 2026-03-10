@@ -44,12 +44,6 @@ variable "registry_password" {
   sensitive   = true
 }
 
-variable "log_retention_days" {
-  description = "Retention period for Log Analytics logs (days)"
-  type        = number
-  default     = 30
-}
-
 # Weekly Summary Email Configuration (optional)
 variable "smtp_host" {
   description = "SMTP server hostname (e.g., smtp.mailgun.org)"

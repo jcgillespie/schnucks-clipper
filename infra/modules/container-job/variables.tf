@@ -40,6 +40,12 @@ variable "app_config_endpoint" {
   type        = string
 }
 
+variable "app_config_connection_string" {
+  description = "App Configuration connection string"
+  type        = string
+  sensitive   = true
+}
+
 variable "session_json_b64" {
   description = "Base64-encoded session.json content"
   type        = string

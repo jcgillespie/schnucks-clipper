@@ -32,6 +32,11 @@ resource "azurerm_container_app_job" "weekly_summary" {
     value = var.session_json_b64
   }
 
+  secret {
+    name  = "app-config-connection"
+    value = var.app_config_connection_string
+  }
+
   registry {
     server               = var.registry_server
     username             = var.registry_username
@@ -78,6 +83,11 @@ resource "azurerm_container_app_job" "weekly_summary" {
       env {
         name  = "APP_CONFIG_ENDPOINT"
         value = var.app_config_endpoint
+      }
+
+      env {
+        name        = "APP_CONFIG_CONNECTION_STRING"
+        secret_name = "app-config-connection"
       }
 
       env {
