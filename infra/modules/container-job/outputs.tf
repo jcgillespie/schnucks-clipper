@@ -17,5 +17,5 @@ output "weekly_summary_enabled" {
 
 output "weekly_summary_principal_id" {
   description = "Principal ID of the weekly-summary job's system-assigned managed identity (null if disabled)"
-  value       = local.weekly_summary_enabled ? azurerm_container_app_job.weekly_summary[0].identity[0].principal_id : null
+  value       = try(azurerm_container_app_job.weekly_summary[0].identity[0].principal_id, null)
 }

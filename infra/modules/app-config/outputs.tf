@@ -13,3 +13,9 @@ output "app_config_endpoint" {
   value       = azurerm_app_configuration.this.endpoint
 }
 
+
+output "app_config_primary_read_key" {
+  description = "Primary read-only key for App Configuration authentication"
+  value       = azurerm_app_configuration.this.primary_read_key[0].connection_string
+  sensitive   = true
+}
