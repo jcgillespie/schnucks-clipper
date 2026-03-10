@@ -16,8 +16,8 @@ describe('Weekly Summary Config', () => {
     process.env = originalEnv;
   });
 
-  test('should throw error when LOG_ANALYTICS_WORKSPACE_ID is missing', () => {
-    delete process.env.LOG_ANALYTICS_WORKSPACE_ID;
+  test('should throw error when APP_CONFIG_ENDPOINT is missing', () => {
+    delete process.env.APP_CONFIG_ENDPOINT;
     process.env.SMTP_HOST = 'smtp.mailgun.org';
     process.env.SMTP_USER = 'test@example.com';
     process.env.SMTP_PASS = 'password';
@@ -31,11 +31,11 @@ describe('Weekly Summary Config', () => {
     const { getWeeklySummaryConfig } = require('../../src/weekly-summary-config.js');
     assert.throws(() => {
       getWeeklySummaryConfig();
-    }, /MISSING_CONFIG: LOG_ANALYTICS_WORKSPACE_ID/);
+    }, /MISSING_CONFIG: APP_CONFIG_ENDPOINT/);
   });
 
   test('should throw error when SMTP_HOST is missing', () => {
-    process.env.LOG_ANALYTICS_WORKSPACE_ID = 'workspace-id';
+    process.env.APP_CONFIG_ENDPOINT = 'https://test.azconfig.io';
     delete process.env.SMTP_HOST;
     process.env.SMTP_USER = 'test@example.com';
     process.env.SMTP_PASS = 'password';
@@ -52,7 +52,7 @@ describe('Weekly Summary Config', () => {
   });
 
   test('should use default SMTP_PORT of 587', () => {
-    process.env.LOG_ANALYTICS_WORKSPACE_ID = 'workspace-id';
+    process.env.APP_CONFIG_ENDPOINT = 'https://test.azconfig.io';
     process.env.SMTP_HOST = 'smtp.mailgun.org';
     delete process.env.SMTP_PORT;
     process.env.SMTP_USER = 'test@example.com';
@@ -69,7 +69,7 @@ describe('Weekly Summary Config', () => {
   });
 
   test('should validate SMTP_PORT is a valid number', () => {
-    process.env.LOG_ANALYTICS_WORKSPACE_ID = 'workspace-id';
+    process.env.APP_CONFIG_ENDPOINT = 'https://test.azconfig.io';
     process.env.SMTP_HOST = 'smtp.mailgun.org';
     process.env.SMTP_PORT = 'invalid';
     process.env.SMTP_USER = 'test@example.com';
@@ -87,7 +87,9 @@ describe('Weekly Summary Config', () => {
   });
 
   test('should load all required configuration', () => {
-    process.env.LOG_ANALYTICS_WORKSPACE_ID = 'workspace-123';
+    process.env.APP_CONFIG_ENDPOINT = 'https://my-app-config.azconfig.io';
+    process.env.APP_CONFIG_CONNECTION_STRING =
+      'Endpoint=https://my-app-config.azconfig.io;Id=abc;Secret=def';
     process.env.SMTP_HOST = 'smtp.mailgun.org';
     process.env.SMTP_PORT = '587';
     process.env.SMTP_USER = 'user@example.com';
@@ -102,7 +104,11 @@ describe('Weekly Summary Config', () => {
     const { getWeeklySummaryConfig } = require('../../src/weekly-summary-config.js');
     const config = getWeeklySummaryConfig();
 
-    assert.strictEqual(config.logAnalyticsWorkspaceId, 'workspace-123');
+    assert.strictEqual(config.appConfigEndpoint, 'https://my-app-config.azconfig.io');
+    assert.strictEqual(
+      config.appConfigConnectionString,
+      'Endpoint=https://my-app-config.azconfig.io;Id=abc;Secret=def',
+    );
     assert.strictEqual(config.smtpHost, 'smtp.mailgun.org');
     assert.strictEqual(config.smtpPort, 587);
     assert.strictEqual(config.smtpUser, 'user@example.com');

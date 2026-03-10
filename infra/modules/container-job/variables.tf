@@ -35,20 +35,16 @@ variable "memory" {
   default     = "1Gi"
 }
 
-variable "storage_account_name" {
-  description = "Name of the storage account for mounting"
+variable "app_config_endpoint" {
+  description = "Endpoint URL of the App Configuration store"
   type        = string
 }
 
-variable "storage_account_key" {
-  description = "Access key for the storage account"
+variable "session_json_b64" {
+  description = "Base64-encoded session.json content"
   type        = string
   sensitive   = true
-}
-
-variable "file_share_name" {
-  description = "Name of the file share for mounting"
-  type        = string
+  default     = ""
 }
 
 variable "cron_schedule" {
@@ -73,15 +69,7 @@ variable "registry_password" {
   sensitive   = true
 }
 
-variable "log_analytics_workspace_id" {
-  description = "ID of the Log Analytics Workspace for logging"
-  type        = string
-}
 
-variable "log_analytics_workspace_customer_id" {
-  description = "Customer ID (workspace ID) of the Log Analytics Workspace for REST API queries"
-  type        = string
-}
 
 variable "smtp_host" {
   description = "SMTP server hostname"

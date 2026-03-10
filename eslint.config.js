@@ -14,10 +14,6 @@ export default [
       globals: {
         ...globals.node,
       },
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-      },
     },
   },
   pluginJs.configs.recommended,

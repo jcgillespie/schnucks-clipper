@@ -5,15 +5,25 @@ import { config } from './config.js';
 import { SessionData } from './api.js';
 
 export async function loadSessionData(): Promise<SessionData> {
-  const sessionPath = config.sessionFile;
+  const { sessionJsonB64, sessionFile } = config;
 
   try {
-    const data = await fs.readFile(sessionPath, 'utf-8');
-    logger.debug('Loading existing session data', { path: sessionPath });
+    // First, try to load from SESSION_JSON_B64 environment variable (cloud deployment)
+    if (sessionJsonB64) {
+      logger.debug('Loading session data from SESSION_JSON_B64 environment variable');
+      const jsonString = Buffer.from(sessionJsonB64, 'base64').toString('utf-8');
+      const data = JSON.parse(jsonString) as SessionData;
+      logger.debug('Session data loaded from environment variable');
+      return data;
+    }
+
+    // Fallback to file read (local development)
+    logger.debug('Loading existing session data from file', { path: sessionFile });
+    const data = await fs.readFile(sessionFile, 'utf-8');
     return JSON.parse(data) as SessionData;
   } catch (error) {
     logger.warn('No existing session data found or validation failed.', {
-      path: sessionPath,
+      sessionFile,
       error: error instanceof Error ? error.message : String(error),
     });
     // Return empty structure or throw - for now throwing effectively stops the app which is correct for batch job

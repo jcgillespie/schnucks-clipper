@@ -4,12 +4,12 @@ FROM node:24-alpine3.23 AS builder
 WORKDIR /usr/src/app
 
 # Install dependencies
-COPY package*.json ./
-RUN npm ci
+COPY package.json pnpm-lock.yaml ./
+RUN corepack enable pnpm && pnpm install --frozen-lockfile
 
 # Copy source and build
 COPY . .
-RUN npm run bundle
+RUN pnpm run bundle
 
 # --- Stage 2: Runtime ---
 # Stage 2: Build a minimal distroless image

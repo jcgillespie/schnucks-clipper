@@ -1,6 +1,7 @@
 {
   "name": "schnucks-coupons",
   "version": "1.0.0",
+  "packageManager": "pnpm@10.30.3",
   "type": "module",
   "description": "Automated coupon clipper for Schnucks",
   "main": "dist/index.cjs",
@@ -13,9 +14,10 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/unit/config.test.ts tests/unit/logger.test.ts tests/unit/session.test.ts tests/unit/api.test.ts tests/unit/clipper.test.ts tests/unit/weekly-summary-config.test.ts tests/unit/weekly-summary.test.ts tests/integration/clipper.integration.test.ts",
+    "test": "tsx --test tests/unit/config.test.ts tests/unit/logger.test.ts tests/unit/session.test.ts tests/unit/api.test.ts tests/unit/clipper.test.ts tests/unit/run-summary-store.test.ts tests/unit/run-summary-store-appconfig.test.ts tests/unit/weekly-summary-config.test.ts tests/unit/weekly-summary.test.ts tests/integration/clipper.integration.test.ts",
     "test:weekly-summary": "tsx scripts/test-weekly-summary-local.ts",
-    "session:init": "tsx src/session-init.ts"
+    "session:init": "tsx src/session-init.ts",
+    "validate": "pnpm format && pnpm lint:fix && pnpm typecheck && pnpm test && pnpm build && pnpm bundle"
   },
   "keywords": [
     "schnucks",
@@ -26,22 +28,23 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@azure/identity": "^4.4.0",
-    "@azure/monitor-query-logs": "^1.0.0",
-    "dotenv": "^16.3.1",
-    "nodemailer": "^7.0.12"
+    "@azure/app-configuration": "^1.11.0",
+    "@azure/identity": "^4.13.0",
+    "dotenv": "^17.3.1",
+    "nodemailer": "^8.0.2"
   },
   "devDependencies": {
-    "@types/node": "^20.10.5",
-    "@types/nodemailer": "^6.4.14",
-    "esbuild": "^0.27.2",
-    "eslint": "^9.39.2",
-    "eslint-config-prettier": "^9.1.2",
-    "globals": "^17.0.0",
-    "playwright-chromium": "^1.57.0",
-    "prettier": "^3.1.1",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.12.0",
+    "@types/nodemailer": "^7.0.11",
+    "esbuild": "^0.27.3",
+    "eslint": "^10.0.3",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.4.0",
+    "playwright-chromium": "^1.58.2",
+    "prettier": "^3.8.1",
     "tsx": "^4.21.0",
-    "typescript": "^5.3.3",
-    "typescript-eslint": "^8.53.0"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.57.0"
   }
 }

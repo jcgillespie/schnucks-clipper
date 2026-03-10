@@ -27,6 +27,11 @@ resource "azurerm_container_app_job" "weekly_summary" {
     value = var.smtp_password
   }
 
+  secret {
+    name  = "session-json-b64"
+    value = var.session_json_b64
+  }
+
   registry {
     server               = var.registry_server
     username             = var.registry_username
@@ -66,9 +71,15 @@ resource "azurerm_container_app_job" "weekly_summary" {
       }
 
       env {
-        name  = "LOG_ANALYTICS_WORKSPACE_ID"
-        value = var.log_analytics_workspace_customer_id
+        name        = "SESSION_JSON_B64"
+        secret_name = "session-json-b64"
       }
+
+      env {
+        name  = "APP_CONFIG_ENDPOINT"
+        value = var.app_config_endpoint
+      }
+
       env {
         name  = "SMTP_HOST"
         value = var.smtp_host
@@ -99,30 +110,4 @@ resource "azurerm_container_app_job" "weekly_summary" {
       }
     }
   }
-}
-
-# Grant Log Analytics Reader role to managed identity
-# 
-# IMPORTANT: This requires the service principal (used by GitHub Actions) to have 
-# "User Access Administrator" or "Owner" role at the subscription or resource group level.
-#
-# If this fails with a 403 AuthorizationFailed error, you have two options:
-# 1. Grant the service principal "User Access Administrator" role (recommended for automation)
-# 2. Manually assign the role after deployment:
-#    az role assignment create \
-#      --assignee $(az containerapp job identity show \
-#        --name schnucks-clipper-prod-job-ws \
-#        --resource-group schnucks-clipper-prod-rg \
-#        --query principalId -o tsv) \
-#      --role "Log Analytics Reader" \
-#      --scope <workspace_id>
-resource "azurerm_role_assignment" "weekly_summary_log_reader" {
-  count                = local.weekly_summary_enabled ? 1 : 0
-  scope                = var.log_analytics_workspace_id
-  role_definition_name = "Log Analytics Reader"
-  principal_id         = azurerm_container_app_job.weekly_summary[0].identity[0].principal_id
-
-  # Explicit dependency to ensure the managed identity is fully propagated in Azure AD
-  # before attempting to create the role assignment
-  depends_on = [azurerm_container_app_job.weekly_summary]
 }

@@ -3,12 +3,14 @@ resource "azurerm_resource_group" "this" {
   location = var.location
 }
 
-module "storage" {
-  source = "./modules/storage"
+module "app_config" {
+  source = "./modules/app-config"
 
-  resource_group_name  = azurerm_resource_group.this.name
-  location             = var.location
-  storage_account_name = replace("${var.project_name}${var.environment}st", "-", "")
+  resource_group_name = azurerm_resource_group.this.name
+  location            = var.location
+  app_config_name     = replace("${var.project_name}-${var.environment}-config", "-", "")
+  project_name        = var.project_name
+  environment         = var.environment
 }
 
 module "container_job" {
@@ -21,16 +23,13 @@ module "container_job" {
   image_name          = var.image_name
   cron_schedule       = var.cron_schedule
 
-  storage_account_name = module.storage.storage_account_name
-  storage_account_key  = module.storage.primary_access_key
-  file_share_name      = module.storage.file_share_name
+  app_config_endpoint = module.app_config.app_config_endpoint
 
   registry_server   = var.registry_server
   registry_username = var.registry_username
   registry_password = var.registry_password
 
-  log_analytics_workspace_id          = module.observability.log_analytics_workspace_id
-  log_analytics_workspace_customer_id = module.observability.log_analytics_workspace_customer_id
+  session_json_b64 = var.session_json_b64
 
   # Daily health digest configuration (optional)
   smtp_host     = var.smtp_host
@@ -41,13 +40,15 @@ module "container_job" {
   email_to      = var.weekly_summary_email_to
 }
 
-module "observability" {
-  source = "./modules/observability"
+resource "azurerm_role_assignment" "clipper_app_config" {
+  scope                = module.app_config.app_config_id
+  role_definition_name = "App Configuration Data Owner"
+  principal_id         = module.container_job.clipper_job_principal_id
+}
 
-  resource_group_name = azurerm_resource_group.this.name
-  location            = var.location
-  project_name        = var.project_name
-  environment         = var.environment
-
-  log_retention_days = var.log_retention_days
+resource "azurerm_role_assignment" "weekly_summary_app_config" {
+  count                = module.container_job.weekly_summary_enabled ? 1 : 0
+  scope                = module.app_config.app_config_id
+  role_definition_name = "App Configuration Data Reader"
+  principal_id         = module.container_job.weekly_summary_principal_id
 }

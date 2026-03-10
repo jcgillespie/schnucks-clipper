@@ -1,50 +1,30 @@
-import { DefaultAzureCredential } from '@azure/identity';
-import { LogsQueryClient, LogsQueryResultStatus } from '@azure/monitor-query-logs';
 import nodemailer from 'nodemailer';
 import { logger } from './logger.js';
 import { getWeeklySummaryConfig, type WeeklySummaryConfig } from './weekly-summary-config.js';
+import { AppConfigRunSummaryStore } from './run-summary-store-appconfig.js';
+import type { RunSummary } from './run-summary-store.js';
 
-// Build KQL query dynamically based on lookback days
-function buildSummaryQuery(lookbackDays: number): string {
-  return `
-let allLogs =
-  ContainerAppConsoleLogs_CL
-  | where TimeGenerated > ago(${lookbackDays}d)
-  | extend jobExecution = extract(@"^(.+)-[^-]+$", 1, ContainerGroupName_s)
-  | extend parsedLog = parse_json(Log_s);
-let failures =
-  allLogs
-  | where tostring(parsedLog.level) == "ERROR"
-  | extend errorMessage = tostring(parsedLog.error)
-  | summarize 
-      FailureTime = max(TimeGenerated),
-      ErrorReasons = make_set(errorMessage, 10)
-    by jobExecution;
-let successes =
-  allLogs
-  | where tostring(parsedLog.message) == "Job completed successfully."
-  | extend summary = parsedLog.summary
-  | summarize 
-      SuccessTime = max(TimeGenerated),
-      Summary = any(summary)
-    by jobExecution;
-failures
-| join kind=fullouter successes on jobExecution
-| extend 
-    ExecutionTime = coalesce(FailureTime, SuccessTime),
-    Status = case(
-      isnotempty(SuccessTime), "Succeeded",
-      isnotempty(FailureTime), "Failed",
-      "Unknown"
-    )
-| project 
-    jobExecution,
-    Status,
-    ExecutionTime,
-    ErrorReasons,
-    Summary
-| order by ExecutionTime desc
-`;
+/**
+ * Convert RunSummary records to ExecutionResult format for email formatting
+ */
+function convertRunSummariesToExecutionResults(runs: RunSummary[]): ExecutionResult[] {
+  return runs
+    .filter((run) => run.jobType === 'clipper')
+    .map((run) => ({
+      jobExecution: run.executionId,
+      Status: run.status === 'success' ? 'Succeeded' : 'Failed',
+      ExecutionTime: new Date(run.timestamp).toISOString(),
+      ErrorReasons: run.errorReasons,
+      Summary:
+        run.status === 'success'
+          ? {
+              total: (run.clipped || 0) + (run.failed || 0) + (run.skipped || 0),
+              clipped: run.clipped || 0,
+              failed: run.failed || 0,
+              skipped: run.skipped || 0,
+            }
+          : undefined,
+    }));
 }
 
 export interface HealthStatus {
@@ -67,75 +47,6 @@ export interface ExecutionResult {
     failed: number;
     skipped: number;
   };
-}
-
-async function queryLogAnalytics(
-  workspaceId: string,
-  query: string,
-  lookbackDays: number,
-): Promise<ExecutionResult[]> {
-  logger.debug('Authenticating to Azure...');
-  const credential = new DefaultAzureCredential();
-
-  logger.debug('Creating LogsQueryClient...');
-  const client = new LogsQueryClient(credential);
-
-  logger.debug('Executing KQL query...', { workspaceId, lookbackDays });
-  const result = await client.queryWorkspace(workspaceId, query, {
-    duration: `P${lookbackDays}D`,
-  });
-
-  if (result.status === LogsQueryResultStatus.Success) {
-    logger.debug('Query executed successfully', {
-      tables: result.tables.length,
-      rows: result.tables.reduce((sum, table) => sum + table.rows.length, 0),
-    });
-
-    if (result.tables.length === 0 || result.tables[0].rows.length === 0) {
-      logger.debug('No execution results found in the past 7 days');
-      return [];
-    }
-
-    const table = result.tables[0];
-    const executions: ExecutionResult[] = [];
-
-    for (const row of table.rows) {
-      const execution: ExecutionResult = {
-        jobExecution: String(row[0] || ''),
-        Status: String(row[1] || ''),
-        ExecutionTime: String(row[2] || ''),
-      };
-
-      // Parse ErrorReasons (array)
-      if (row[3] !== null && row[3] !== undefined) {
-        try {
-          execution.ErrorReasons = JSON.parse(String(row[3])) as string[];
-        } catch {
-          execution.ErrorReasons = [String(row[3])];
-        }
-      }
-
-      // Parse Summary (object)
-      if (row[4] !== null && row[4] !== undefined) {
-        try {
-          // The Azure SDK may return the object directly or as a JSON string
-          if (typeof row[4] === 'object') {
-            execution.Summary = row[4] as ExecutionResult['Summary'];
-          } else {
-            execution.Summary = JSON.parse(String(row[4])) as ExecutionResult['Summary'];
-          }
-        } catch {
-          logger.warn('Failed to parse summary', { summary: row[4] });
-        }
-      }
-
-      executions.push(execution);
-    }
-
-    return executions;
-  } else {
-    throw new Error(`Query failed: ${result.partialError?.message || 'Unknown error'}`);
-  }
 }
 
 function calculateHealthStatus(executions: ExecutionResult[]): HealthStatus {
@@ -235,18 +146,14 @@ export function formatEmailSummary(
   const summary = aggregateExecutions(executions);
 
   // Determine status badge
-  let statusBadge = '';
-  let statusEmoji = '';
-  if (healthStatus.status === 'healthy') {
-    statusBadge = '<span class="status-badge status-healthy">✅ All Systems Operational</span>';
-    statusEmoji = '✅';
-  } else if (healthStatus.status === 'warning') {
-    statusBadge = '<span class="status-badge status-warning">⚠️ Warnings Detected</span>';
-    statusEmoji = '⚠️';
-  } else {
-    statusBadge = '<span class="status-badge status-error">❌ Failures Detected</span>';
-    statusEmoji = '❌';
-  }
+  const statusBadge =
+    healthStatus.status === 'healthy'
+      ? '<span class="status-badge status-healthy">✅ All Systems Operational</span>'
+      : healthStatus.status === 'warning'
+        ? '<span class="status-badge status-warning">⚠️ Warnings Detected</span>'
+        : '<span class="status-badge status-error">❌ Failures Detected</span>';
+  const statusEmoji =
+    healthStatus.status === 'healthy' ? '✅' : healthStatus.status === 'warning' ? '⚠️' : '❌';
 
   // HTML version
   let html = `
@@ -486,30 +393,32 @@ export async function runWeeklySummary() {
   logger.debug('Health Digest Job starting...');
 
   // Lazy-load config only when actually running the weekly summary job
-  // This prevents validation errors when the module is imported but not used
   const config = getWeeklySummaryConfig();
 
   try {
-    // 1. Query Log Analytics
-    logger.debug('Querying Log Analytics workspace...', {
-      workspaceId: config.logAnalyticsWorkspaceId,
+    // 1. Initialize run summary store and query for recent runs
+    logger.debug('Querying run summaries from App Configuration...', {
+      endpoint: config.appConfigEndpoint,
       lookbackDays: config.lookbackDays,
       schedule: config.schedule,
     });
-    const query = buildSummaryQuery(config.lookbackDays);
-    const executions = await queryLogAnalytics(
-      config.logAnalyticsWorkspaceId,
-      query,
-      config.lookbackDays,
+
+    const store = new AppConfigRunSummaryStore(
+      config.appConfigEndpoint,
+      config.appConfigConnectionString,
     );
 
-    logger.debug('Query completed', { executionCount: executions.length });
+    const runs = await store.listRunsSince(config.lookbackDays);
+    logger.debug('Query completed', { runCount: runs.length });
 
-    // 2. Format email
+    // 2. Convert to execution results format
+    const executions = convertRunSummariesToExecutionResults(runs);
+
+    // 3. Format email
     logger.debug('Formatting email summary...');
     const { html, text } = formatEmailSummary(executions, config.lookbackDays, config);
 
-    // 3. Determine if we should send email
+    // 4. Determine if we should send email
     const healthStatus = calculateHealthStatus(executions);
     const shouldSend = config.sendOnSuccess || healthStatus.status !== 'healthy';
 
