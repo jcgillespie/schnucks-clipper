@@ -70,9 +70,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup OpenTofu
-        uses: opentofu/setup-opentofu@v1
+        uses: opentofu/setup-opentofu@v2
         with:
-          tofu_version: 1.6.0
+          tofu_version: 1.11.5
 
       - name: OpenTofu Init
         # CD workflow runs on push to main, so secrets should be available.
@@ -89,14 +89,15 @@ jobs:
             -backend-config="key=${TFSTATE_KEY}"
 
       - name: OpenTofu Apply
+        env:
+          TF_VAR_registry_password: ${{ secrets.GHCR_PAT }}
+          TF_VAR_session_json_b64: ${{ secrets.SESSION_JSON_B64 }}
+          TF_VAR_smtp_password: ${{ secrets.SMTP_PASSWORD }}
         run: |
           tofu apply -auto-approve \
             -var "image_name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:main" \
             -var "registry_username=${{ github.actor }}" \
-            -var "registry_password=${{ secrets.GHCR_PAT }}" \
-            -var "session_json_b64=${{ secrets.SESSION_JSON_B64 }}" \
             -var "smtp_host=${{ secrets.SMTP_HOST }}" \
             -var "smtp_user=${{ secrets.SMTP_USER }}" \
-            -var "smtp_password=${{ secrets.SMTP_PASSWORD }}" \
             -var "weekly_summary_email_from=${{ secrets.WEEKLY_SUMMARY_EMAIL_FROM }}" \
             -var "weekly_summary_email_to=${{ secrets.WEEKLY_SUMMARY_EMAIL_TO }}"
