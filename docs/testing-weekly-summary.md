@@ -160,6 +160,6 @@ az monitor log-analytics workspace show \
 After local testing passes:
 
 1. Build the Docker image: `docker build -t schnucks-clipper .`
-2. Verify both bundles are included: Check `dist/index.cjs` and `dist/weekly-summary.cjs`
+2. Verify the bundle is created: Check `dist/index.cjs`
 3. Deploy infrastructure with SMTP variables
 4. Monitor the first weekly summary job execution

@@ -71,6 +71,7 @@ Required secrets:
 - `TFSTATE_CONTAINER`
 - `TFSTATE_KEY`
 - `GHCR_PAT`
+- `SESSION_JSON_B64`: Base64-encoded contents of `data/session.json` (see step 7)
 
 Optional secrets (daily health digest email - recommended for monitoring):
 
@@ -87,9 +88,9 @@ Push to `main` (or use workflow dispatch). The CD workflow will:
 - Build and push `ghcr.io/<owner>/<repo>:main`
 - Run `tofu apply` with your secrets
 
-## 7. Upload the session file
+## 7. Upload the session secret
 
-The job needs `data/session.json` in the Azure File Share.
+The container receives your session via the `SESSION_JSON_B64` GitHub Secret. Run `session:init` locally first if you haven't already:
 
 ```bash
 npm install
@@ -97,24 +98,21 @@ npx playwright install chromium
 npm run session:init
 ```
 
-Then retrieve outputs and upload:
+Then encode `data/session.json` to Base64 and store it as the `SESSION_JSON_B64` secret in your fork (Settings -> Secrets and variables -> Actions):
 
 ```bash
-cd infra
-tofu init \
-  -backend-config="resource_group_name=$TFSTATE_RG" \
-  -backend-config="storage_account_name=$TFSTATE_STORAGE" \
-  -backend-config="container_name=$TFSTATE_CONTAINER" \
-  -backend-config="key=$TFSTATE_KEY"
+# macOS
+base64 -i data/session.json | tr -d '\n'
 
-az storage file upload \
-  --account-name $(tofu output -raw storage_account_name) \
-  --share-name $(tofu output -raw file_share_name) \
-  --source ../data/session.json \
-  --path session.json \
-  --account-key $(tofu output -raw storage_account_key)
+# Linux
+base64 -w 0 data/session.json
 ```
 
-## 8. Confirm alerts
+Copy the output and save it as the `SESSION_JSON_B64` secret. The CD workflow passes it to `tofu apply` on every deploy.
 
-Watch for the "Microsoft Azure Alerts" confirmation email and click the link to start receiving alerts.
+> [!NOTE]
+> If your session expires, re-run `npm run session:init`, re-encode the new `data/session.json`, update the `SESSION_JSON_B64` secret, and re-run the CD workflow.
+
+## 8. Verify deployment
+
+Once the CD workflow completes, confirm the container app job appears in the Azure portal under your resource group. Execution logs are available in the Container App Environment's log stream.

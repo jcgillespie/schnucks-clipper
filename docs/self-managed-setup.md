@@ -79,11 +79,31 @@ az role assignment create \
 - `image_name`: Full Docker image name and tag (e.g., `ghcr.io/your-username/schnucks-clipper:latest`)
 - `registry_username`: Registry username (for GHCR, your GitHub username)
 - `registry_password`: Registry password/token (for GHCR, a PAT with `read:packages`)
+- `session_json_b64`: Base64-encoded contents of `data/session.json` (see step 6)
 
 **Optional variables (daily health digest email - recommended for monitoring):**
 
 - `smtp_host`, `smtp_port`, `smtp_user`, `smtp_password`
 - `weekly_summary_email_from`, `weekly_summary_email_to`
+
+If you use a registry other than GHCR, set `registry_server` accordingly (default: `ghcr.io`).
+
+> [!NOTE]
+> The weekly summary job is optional. If you omit SMTP variables, it will not be created.
+
+## 6. Encode and pass session data
+
+The container receives your session via the `SESSION_JSON_B64` environment variable. Encode `data/session.json` to Base64 and pass it as a Tofu variable:
+
+```bash
+# macOS
+export SESSION_JSON_B64=$(base64 -i data/session.json | tr -d '\n')
+
+# Linux
+export SESSION_JSON_B64=$(base64 -w 0 data/session.json)
+```
+
+Then provision:
 
 ```bash
 cd infra
@@ -91,36 +111,16 @@ tofu init -backend-config=backend.hcl
 tofu apply \
   -var="image_name=$IMAGE_NAME" \
   -var="registry_username=<your-username>" \
-  -var="registry_password=<registry-password>"
+  -var="registry_password=<registry-password>" \
+  -var="session_json_b64=$SESSION_JSON_B64"
 ```
-
-If you use a registry other than GHCR, set `registry_server` accordingly (default: `ghcr.io`).
 
 > [!NOTE]
-> The weekly summary job is optional. If you omit SMTP variables, it will not be created.
+> If your session expires, re-run `npm run session:init`, re-encode the new `data/session.json`, and re-run `tofu apply`.
 
-## 6. Upload session data
+## 7. Monitoring
 
-After provisioning, upload the local `data/session.json` so the container can access it.
+The infrastructure sets up:
 
-```bash
-az storage file upload \
-  --account-name $(cd infra && tofu output -raw storage_account_name) \
-  --share-name $(cd infra && tofu output -raw file_share_name) \
-  --source data/session.json \
-  --path session.json \
-  --account-key $(cd infra && tofu output -raw storage_account_key)
-```
-
-## 7. Monitoring & Alerts
-
-The infrastructure automatically sets up:
-
-- **Log Analytics Workspace**: Centralized log collection with 30-day retention.
-- **Alert Rules**:
-  - **App Health**: A consolidated alert that triggers if the clipper encounters an exception, fatal error, or requires a session refresh (`MISSING_CLIENT_ID`).
-  - **Job Failure**: Triggers only when the container job fails at the system level after exhausting its retry limit.
-- **Action Group**: Sends email notifications to the configured admin address.
-- **Weekly Job Summary**: A separate container job that runs every Sunday to send a weekly email summary of all job executions in the past 7 days with their final status and coupon counts.
-
-**Post-deployment step**: You will receive an email from "Microsoft Azure Alerts" to confirm your subscription to the Action Group. You must click the confirmation link to start receiving alerts.
+- **Container App Environment**: Provides built-in execution logs accessible via the Azure portal under the Container App Environment's log stream.
+- **Weekly Job Summary**: A separate container job that runs every Saturday at 2 PM UTC (8 AM Central Time) to send a weekly email summary of all job executions in the past 7 days with their final status and coupon counts. Only created when SMTP variables are provided.
