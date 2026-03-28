@@ -79,11 +79,31 @@ az role assignment create \
 - `image_name`: Full Docker image name and tag (e.g., `ghcr.io/your-username/schnucks-clipper:latest`)
 - `registry_username`: Registry username (for GHCR, your GitHub username)
 - `registry_password`: Registry password/token (for GHCR, a PAT with `read:packages`)
+- `session_json_b64`: Base64-encoded contents of `data/session.json` (see step 6)
 
 **Optional variables (daily health digest email - recommended for monitoring):**
 
 - `smtp_host`, `smtp_port`, `smtp_user`, `smtp_password`
 - `weekly_summary_email_from`, `weekly_summary_email_to`
+
+If you use a registry other than GHCR, set `registry_server` accordingly (default: `ghcr.io`).
+
+> [!NOTE]
+> The weekly summary job is optional. If you omit SMTP variables, it will not be created.
+
+## 6. Encode and pass session data
+
+The container receives your session via the `SESSION_JSON_B64` environment variable. Encode `data/session.json` to Base64 and pass it as a Tofu variable:
+
+```bash
+# macOS
+export SESSION_JSON_B64=$(base64 -i data/session.json | tr -d '\n')
+
+# Linux
+export SESSION_JSON_B64=$(base64 -w 0 data/session.json)
+```
+
+Then provision:
 
 ```bash
 cd infra
@@ -91,26 +111,12 @@ tofu init -backend-config=backend.hcl
 tofu apply \
   -var="image_name=$IMAGE_NAME" \
   -var="registry_username=<your-username>" \
-  -var="registry_password=<registry-password>"
+  -var="registry_password=<registry-password>" \
+  -var="session_json_b64=$SESSION_JSON_B64"
 ```
-
-If you use a registry other than GHCR, set `registry_server` accordingly (default: `ghcr.io`).
 
 > [!NOTE]
-> The weekly summary job is optional. If you omit SMTP variables, it will not be created.
-
-## 6. Upload session data
-
-After provisioning, upload the local `data/session.json` so the container can access it.
-
-```bash
-az storage file upload \
-  --account-name $(cd infra && tofu output -raw storage_account_name) \
-  --share-name $(cd infra && tofu output -raw file_share_name) \
-  --source data/session.json \
-  --path session.json \
-  --account-key $(cd infra && tofu output -raw storage_account_key)
-```
+> If your session expires, re-run `npm run session:init`, re-encode the new `data/session.json`, and re-run `tofu apply`.
 
 ## 7. Monitoring & Alerts
 
