@@ -118,15 +118,9 @@ tofu apply \
 > [!NOTE]
 > If your session expires, re-run `npm run session:init`, re-encode the new `data/session.json`, and re-run `tofu apply`.
 
-## 7. Monitoring & Alerts
+## 7. Monitoring
 
-The infrastructure automatically sets up:
+The infrastructure sets up:
 
-- **Log Analytics Workspace**: Centralized log collection with 30-day retention.
-- **Alert Rules**:
-  - **App Health**: A consolidated alert that triggers if the clipper encounters an exception, fatal error, or requires a session refresh (`MISSING_CLIENT_ID`).
-  - **Job Failure**: Triggers only when the container job fails at the system level after exhausting its retry limit.
-- **Action Group**: Sends email notifications to the configured admin address.
-- **Weekly Job Summary**: A separate container job that runs every Sunday to send a weekly email summary of all job executions in the past 7 days with their final status and coupon counts.
-
-**Post-deployment step**: You will receive an email from "Microsoft Azure Alerts" to confirm your subscription to the Action Group. You must click the confirmation link to start receiving alerts.
+- **Container App Environment**: Provides built-in execution logs accessible via the Azure portal under the Container App Environment's log stream.
+- **Weekly Job Summary**: A separate container job that runs every Saturday at 2 PM UTC (8 AM Central Time) to send a weekly email summary of all job executions in the past 7 days with their final status and coupon counts. Only created when SMTP variables are provided.

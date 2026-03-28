@@ -113,6 +113,6 @@ Copy the output and save it as the `SESSION_JSON_B64` secret. The CD workflow pa
 > [!NOTE]
 > If your session expires, re-run `npm run session:init`, re-encode the new `data/session.json`, update the `SESSION_JSON_B64` secret, and re-run the CD workflow.
 
-## 8. Confirm alerts
+## 8. Verify deployment
 
-Watch for the "Microsoft Azure Alerts" confirmation email and click the link to start receiving alerts.
+Once the CD workflow completes, confirm the container app job appears in the Azure portal under your resource group. Execution logs are available in the Container App Environment's log stream.

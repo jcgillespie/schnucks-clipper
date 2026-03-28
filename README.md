@@ -92,7 +92,7 @@ For forked-repo deployments via GitHub Actions, see `docs/github-actions-setup.m
 - `SMTP_USER`: SMTP username (e.g., your Mailgun email address)
 - `SMTP_PASSWORD`: SMTP password/API key (sensitive)
 - `WEEKLY_SUMMARY_EMAIL_FROM`: Email address to send weekly summary from
-- `WEEKLY_SUMMARY_EMAIL_TO`: Email address to send weekly summary to (defaults to `ACTION_GROUP_EMAIL` if not set)
+- `WEEKLY_SUMMARY_EMAIL_TO`: Email address to send weekly summary to (required for weekly summary emails)
 
 > [!IMPORTANT]
 > **Service Principal Permissions**: The service principal (`AZURE_CLIENT_ID`) must have the "User Access Administrator" role at the subscription or resource group level to enable the weekly summary feature. This is required for Terraform to create role assignments for the weekly summary job's managed identity. See `docs/self-managed-setup.md` and `docs/github-actions-setup.md` for the role assignment command.
