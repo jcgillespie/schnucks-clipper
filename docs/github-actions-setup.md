@@ -93,9 +93,9 @@ Push to `main` (or use workflow dispatch). The CD workflow will:
 The container receives your session via the `SESSION_JSON_B64` GitHub Secret. Run `session:init` locally first if you haven't already:
 
 ```bash
-npm install
-npx playwright install chromium
-npm run session:init
+pnpm install
+pnpm exec playwright install chromium
+pnpm run session:init
 ```
 
 Then encode `data/session.json` to Base64 and store it as the `SESSION_JSON_B64` secret in your fork (Settings -> Secrets and variables -> Actions):
@@ -111,7 +111,7 @@ base64 -w 0 data/session.json
 Copy the output and save it as the `SESSION_JSON_B64` secret. The CD workflow passes it to `tofu apply` on every deploy.
 
 > [!NOTE]
-> If your session expires, re-run `npm run session:init`, re-encode the new `data/session.json`, update the `SESSION_JSON_B64` secret, and re-run the CD workflow.
+> If your session expires, re-run `pnpm run session:init`, re-encode the new `data/session.json`, update the `SESSION_JSON_B64` secret, and re-run the CD workflow.
 
 ## 8. Verify deployment
 
