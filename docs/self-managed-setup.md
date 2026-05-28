@@ -116,7 +116,7 @@ tofu apply \
 ```
 
 > [!NOTE]
-> If your session expires, re-run `npm run session:init`, re-encode the new `data/session.json`, and re-run `tofu apply`.
+> If your session expires, re-run `pnpm run session:init`, re-encode the new `data/session.json`, and re-run `tofu apply`.
 
 ## 7. Monitoring
 

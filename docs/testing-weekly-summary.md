@@ -7,7 +7,7 @@ This guide explains how to test the weekly summary functionality without deployi
 1. **Node.js dependencies installed**:
 
    ```bash
-   npm install
+   pnpm install
    ```
 
 2. **Azure CLI** (for testing with real Log Analytics):
@@ -28,7 +28,7 @@ This guide explains how to test the weekly summary functionality without deployi
 Run unit tests for configuration and email formatting:
 
 ```bash
-npm test
+pnpm test
 ```
 
 This will run:
@@ -41,7 +41,7 @@ This will run:
 Test the email formatting and structure without connecting to Azure:
 
 ```bash
-npm run test:weekly-summary -- --mock
+pnpm run test:weekly-summary -- --mock
 ```
 
 This will:
@@ -63,7 +63,7 @@ az monitor log-analytics workspace show \
   --query customerId -o tsv
 
 # Then run the test
-npm run test:weekly-summary -- --workspace-id <your-workspace-customer-id>
+pnpm run test:weekly-summary -- --workspace-id <your-workspace-customer-id>
 ```
 
 **Requirements:**
@@ -82,7 +82,7 @@ export MAILTRAP_USER="your-mailtrap-user"
 export MAILTRAP_PASS="your-mailtrap-pass"
 
 # Run test with mock data and Mailtrap
-npm run test:weekly-summary -- --mock --mailtrap
+pnpm run test:weekly-summary -- --mock --mailtrap
 ```
 
 Then check your Mailtrap inbox to see the formatted email.
@@ -99,7 +99,7 @@ export SMTP_PASS="your-mailgun-api-key"
 export EMAIL_FROM="your-mailgun-email@yourdomain.com"
 export EMAIL_TO="your-email@example.com"
 
-npm run test:weekly-summary -- --mock --send-email
+pnpm run test:weekly-summary -- --mock --send-email
 ```
 
 **Warning:** This will send a real email!
@@ -117,19 +117,19 @@ The `test-weekly-summary-local.ts` script supports:
 
 Before deploying, verify:
 
-- [ ] Unit tests pass: `npm test`
-- [ ] Email formatting looks correct: `npm run test:weekly-summary -- --mock`
+- [ ] Unit tests pass: `pnpm test`
+- [ ] Email formatting looks correct: `pnpm run test:weekly-summary -- --mock`
 - [ ] Configuration validation works: Check error messages in unit tests
 - [ ] HTML email renders correctly: Use Mailtrap to view formatted email
 - [ ] Text email is readable: Check plain text version
-- [ ] Azure authentication works: `npm run test:weekly-summary -- --workspace-id <id>`
+- [ ] Azure authentication works: `pnpm run test:weekly-summary -- --workspace-id <id>`
 - [ ] SMTP connection works: Test with Mailtrap or real SMTP
 
 ## Troubleshooting
 
 ### "Could not resolve @azure/identity"
 
-Run `npm install` to install dependencies.
+Run `pnpm install` to install dependencies.
 
 ### "Authentication failed" when testing with Azure
 
