@@ -25,6 +25,7 @@ Automated tool to clip all available Schnucks coupons using Playwright and Node.
 ### 1. Prerequisites
 
 - Node.js 24+
+- pnpm
 
 Deployment prerequisites (Docker, Azure CLI, OpenTofu) are covered in the deployment guides below.
 
