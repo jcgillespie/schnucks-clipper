@@ -1,11 +1,7 @@
 name: CI
 
 on:
-  push:
-    branches-ignore:
-      - 'main'
   pull_request:
-    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -15,23 +11,19 @@ concurrency:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [24]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v5
+        uses: pnpm/setup@v3
         with:
-          version: 10.30.3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+          runtime: node@${{ matrix.node-version }}
+          cache: true
+          require-lockfile: true
 
       - name: Lint
         run: pnpm run lint
