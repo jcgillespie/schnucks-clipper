@@ -13,7 +13,7 @@ updates:
         dependency-type: "production"
 
   - package-ecosystem: "github-actions"
-    directory: "/
+    directory: "/"
     schedule:
       interval: "weekly"
 
