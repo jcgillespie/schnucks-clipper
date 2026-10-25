@@ -13,7 +13,7 @@ RUN pnpm run bundle
 
 # --- Stage 2: Runtime ---
 # Stage 2: Build a minimal distroless image
-FROM alpine:3.23
+FROM alpine:3.24
 # Set environment variables
 ENV NODE_ENV=production
 ENV DATA_PATH=/data
