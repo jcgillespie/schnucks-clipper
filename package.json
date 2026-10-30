@@ -28,10 +28,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@azure/app-configuration": "^1.13.0",
-    "@azure/identity": "^4.13.3",
-    "dotenv": "^18.0.6",
-    "nodemailer": "^10.0.9"
+    "@azure/app-configuration": "^1.13.1",
+    "@azure/identity": "^4.14.0",
+    "dotenv": "^18.0.9",
+    "nodemailer": "^10.2.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
